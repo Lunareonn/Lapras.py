@@ -6,7 +6,7 @@ class Utility(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.group()
+    @commands.hybrid_group()
     @commands.is_owner()
     async def presence(self, ctx):
         await ctx.send("Incorrect syntax! Try `presence set` or `presence clear`")
