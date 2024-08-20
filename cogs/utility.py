@@ -18,6 +18,13 @@ class Utility(commands.Cog):
         await ctx.message.delete()
         await ctx.send(f"Done! Changed presence to `{presence}`")
 
+    @commands.is_owner()
+    @presence.command()
+    async def clear(self, ctx):
+        await self.client.change_presence(activity=None)
+        await ctx.message.delete()
+        await ctx.send("Done! Presence cleared.")
+
 
 async def setup(client):
     await client.add_cog(Utility(client))
