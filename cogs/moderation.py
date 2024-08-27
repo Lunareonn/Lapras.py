@@ -9,6 +9,11 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.command()
     async def ban(self, ctx, user: discord.Member, reason: str):
+        dm_embed = discord.Embed(title="You have been banned from {}",
+                                 description="Reason: {}",
+                                 colour=0xf43100)
+        await user.send(dm_embed)
+
         await user.ban(delete_message_seconds=0, reason=reason)
         await ctx.send(f"{user} has been banned! :thumbsup:")
 
@@ -27,6 +32,11 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.command()
     async def bandel(self, ctx, user: discord.Member, reason: str, messagedel: int):
+        dm_embed = discord.Embed(title="You have been banned from {}",
+                                 description="Reason: {}",
+                                 colour=0xf43100)
+        await user.send(dm_embed)
+
         await user.ban(delete_message_days=messagedel, reason=reason)
         await ctx.send(f"{user} has been banned! :thumbsup:")
 

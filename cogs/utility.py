@@ -25,6 +25,11 @@ class Utility(commands.Cog):
         await ctx.message.delete()
         await ctx.send("Done! Presence cleared.")
 
+    @commands.command()
+    async def ping(self, ctx):
+        latency = self.client.latency
+        await ctx.send(f"Ping! In {round(latency * 1000)}ms")
+
 
 async def setup(client):
     await client.add_cog(Utility(client))

@@ -1,11 +1,12 @@
 import discord
 import os
+import sqlite3
 from dotenv import load_dotenv
 from discord.ext import commands
 
 load_dotenv()
 intents = discord.Intents.all()
-client = commands.AutoShardedBot(shard_count=2,
+client = commands.AutoShardedBot(shard_count=1,
                                  command_prefix="$",
                                  intents=intents)
 
@@ -20,6 +21,20 @@ async def test(ctx: commands.Context):
 @client.event
 async def on_ready():
     print(f"Ready. Logged in as {client.user}")
+
+
+@client.event
+async def on_guild_join(guild):
+    id = str(guild.id)
+    name = str(guild)
+
+    conn = sqlite3.connect("database.db")
+    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (name TEXT);")
+
+    cursor = conn.cursor()
+    cursor.execute(f"INSERT INTO \"{id}\" (name) VALUES(?);", (name,))
+    conn.commit()
+    print(f"bot was added to server {guild}")
 
 
 @client.event
