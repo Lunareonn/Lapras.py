@@ -5,3 +5,4 @@ __pycache__/
 .vscode/
 .flake8
 database.db
+macros.db

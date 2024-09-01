@@ -8,26 +8,35 @@ class Moderation(commands.Cog):
 
     @commands.has_permissions(ban_members=True)
     @commands.command()
-    async def ban(self, ctx, user: discord.Member, reason: str):
-        dm_embed = discord.Embed(title="You have been banned from {}",
-                                 description="Reason: {}",
-                                 colour=0xf43100)
-        await user.send(dm_embed)
+    async def ban(self, ctx, user: discord.User, reason: str):
+        try:
+            dm_embed = discord.Embed(title=f"You have been banned from {ctx.guild.name}",
+                                     description=f"Reason: {reason}",
+                                     colour=0xf43100)
+            await user.send(embed=dm_embed)
+        except discord.HTTPException:
+            print(f"Couldn't send a Direct Message to {user.id}")
+            pass
 
-        await user.ban(delete_message_seconds=0, reason=reason)
+        await ctx.guild.ban(user, delete_message_seconds=0, reason=reason)
         await ctx.send(f"{user} has been banned! :thumbsup:")
 
     @ban.error
     async def ban_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.message.delete()
-            await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}")
+            try:
+                await ctx.message.delete()
+                await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}")
+            except discord.Forbidden:
+                await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}\n**WARNING!** ``discord.Forbidden`` was raised! I may be missing important permissions.")
+        if isinstance(error, commands.UserNotFound):
+            await ctx.send("Given user was not found!")
         if isinstance(error, discord.NotFound):
             await ctx.send("Given user was not found!")
         if isinstance(error, discord.Forbidden):
-            await ctx.send("You can't do that.")
-        if isinstance(error, discord.HTTPException):
-            await ctx.send(f"**discord.HTTPException** raised! Something went wrong. Ping @lunareonn if issue persists.\n{error}")
+            await ctx.send("You don't have permissions to do that.")
+        else:
+            raise error
 
     @commands.has_permissions(ban_members=True)
     @commands.command()
@@ -37,20 +46,25 @@ class Moderation(commands.Cog):
                                  colour=0xf43100)
         await user.send(dm_embed)
 
-        await user.ban(delete_message_days=messagedel, reason=reason)
+        await ctx.guild.ban(user, delete_message_days=messagedel, reason=reason)
         await ctx.send(f"{user} has been banned! :thumbsup:")
 
     @bandel.error
     async def bandel_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.message.delete()
-            await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}")
+            try:
+                await ctx.message.delete()
+                await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}")
+            except discord.Forbidden:
+                await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}\n**WARNING!** ``discord.Forbidden`` was raised! I may be missing important permissions.")
+        if isinstance(error, commands.UserNotFound):
+            await ctx.send("Given user was not found!")
         if isinstance(error, discord.NotFound):
             await ctx.send("Given user was not found!")
         if isinstance(error, discord.Forbidden):
-            await ctx.send("You can't do that.")
-        if isinstance(error, discord.HTTPException):
-            await ctx.send(f"**discord.HTTPException** raised! Something went wrong. Ping @lunareonn if issue persists.\n{error}")
+            await ctx.send("You don't have permissions to do that.")
+        else:
+            raise error
 
     @commands.has_permissions(ban_members=True)
     @commands.command()
@@ -61,14 +75,19 @@ class Moderation(commands.Cog):
     @unban.error
     async def unban_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.message.delete()
-            await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}")
+            try:
+                await ctx.message.delete()
+                await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}")
+            except discord.Forbidden:
+                await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}\n**WARNING!** ``discord.Forbidden`` was raised! I may be missing important permissions.")
+        if isinstance(error, commands.UserNotFound):
+            await ctx.send("Given user was not found!")
         if isinstance(error, discord.NotFound):
             await ctx.send("Given user was not found!")
         if isinstance(error, discord.Forbidden):
-            await ctx.send("You can't do that.")
-        if isinstance(error, discord.HTTPException):
-            await ctx.send(f"**discord.HTTPException** raised! Something went wrong. Ping @lunareonn if issue presists.\n{error}")
+            await ctx.send("You don't have permissions to do that.")
+        else:
+            raise error
 
 
 async def setup(client):
