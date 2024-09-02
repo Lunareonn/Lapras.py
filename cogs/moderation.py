@@ -1,4 +1,5 @@
 import discord
+from typing import Optional
 from discord.ext import commands
 
 
@@ -88,6 +89,15 @@ class Moderation(commands.Cog):
             await ctx.send("You don't have permissions to do that.")
         else:
             raise error
+
+    @commands.command()
+    async def kick(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
+        if user is None and ctx.message.reference is None:
+            return await ctx.send("No user was specified!")
+        else:
+            message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+            user = message.author
+            print(user)
 
 
 async def setup(client):
