@@ -19,8 +19,7 @@ class Macros(commands.Cog):
         rows = cursor.fetchall()
         for r in rows:
             if r == name:
-                await ctx.send("That macro already exists.")
-                return
+                return await ctx.send("That macro already exists.")
 
         cursor.execute(f"INSERT INTO \"{id}\" (name, content) VALUES(?, ?);", (name, content,))
         self.conn.commit()
@@ -59,8 +58,7 @@ class Macros(commands.Cog):
                 pass
 
         if content is None:
-            await ctx.send(f"<@{ctx.message.author.id}>: Macro '{name}' is not a valid macro")
-            return
+            return await ctx.send(f"<@{ctx.message.author.id}>: Macro '{name}' is not a valid macro")
 
         await ctx.send(f"{content}")
 

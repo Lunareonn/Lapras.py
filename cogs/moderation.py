@@ -7,16 +7,20 @@ class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.has_permissions(ban_members=True)
+    @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
-    async def ban(self, ctx, user: discord.User, reason: str):
+    async def ban(self, ctx, user: discord.User, *, reason: str = ""):
+        if user == ctx.author:
+            return await ctx.send("You can't ban yourself!")
+        elif user == self.client.user:
+            return await ctx.send("I can't ban myself!")
+
+        dm_message = f"You have been banned from {ctx.guild}!"
+        if reason:
+            dm_message += f" Reason given: '{reason}'"
         try:
-            dm_embed = discord.Embed(title=f"You have been banned from {ctx.guild.name}",
-                                     description=f"Reason: {reason}",
-                                     colour=0xf43100)
-            await user.send(embed=dm_embed)
+            await user.send(dm_message)
         except discord.HTTPException:
-            print(f"Couldn't send a Direct Message to {user.id}")
             pass
 
         await ctx.guild.ban(user, delete_message_seconds=0, reason=reason)
@@ -39,13 +43,21 @@ class Moderation(commands.Cog):
         else:
             raise error
 
-    @commands.has_permissions(ban_members=True)
+    @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
-    async def bandel(self, ctx, user: discord.Member, reason: str, messagedel: int):
-        dm_embed = discord.Embed(title="You have been banned from {}",
-                                 description="Reason: {}",
-                                 colour=0xf43100)
-        await user.send(dm_embed)
+    async def bandel(self, ctx, messagedel: int, user: discord.Member, *, reason: str = "Not specified"):
+        if user == ctx.author:
+            return await ctx.send("You can't ban yourself!")
+        elif user == self.client.user:
+            return await ctx.send("I can't ban myself!")
+
+        dm_message = f"You have been banned from {ctx.guild}!"
+        if reason:
+            dm_message += f" Reason given: '{reason}'"
+        try:
+            await user.send(dm_message)
+        except discord.HTTPException:
+            pass
 
         await ctx.guild.ban(user, delete_message_days=messagedel, reason=reason)
         await ctx.send(f"{user} has been banned! :thumbsup:")
@@ -59,19 +71,19 @@ class Moderation(commands.Cog):
             except discord.Forbidden:
                 await ctx.send(f"<@{ctx.author.id}>: Not enough arguments! {error}\n**WARNING!** ``discord.Forbidden`` was raised! I may be missing important permissions.")
         if isinstance(error, commands.UserNotFound):
-            await ctx.send("Given user was not found!")
+            await ctx.send("Specified user couldn't be found.")
         if isinstance(error, discord.NotFound):
-            await ctx.send("Given user was not found!")
+            await ctx.send("Specified user couldn't be found.")
         if isinstance(error, discord.Forbidden):
             await ctx.send("You don't have permissions to do that.")
         else:
             raise error
 
-    @commands.has_permissions(ban_members=True)
+    @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def unban(self, ctx, user: discord.Member):
-        await user.unban()
-        await ctx.send(f"{user} has been unbanned! :thumbsup:")
+        await ctx.guild.unban(user)
+        await ctx.send(f"{user} was unbanned! :thumbsup:")
 
     @unban.error
     async def unban_error(self, ctx, error):
@@ -90,14 +102,32 @@ class Moderation(commands.Cog):
         else:
             raise error
 
+    @commands.has_permissions(kick_members=True, moderate_members=True)
     @commands.command()
     async def kick(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
+        if user == ctx.author:
+            return await ctx.send("You can't kick yourself!")
+        elif user == self.client.user:
+            return await ctx.send("I can't kick myself!")
+
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
         else:
-            message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-            user = message.author
-            print(user)
+            if user is not None and ctx.message.reference is not None:
+                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                user = message.author
+
+        dm_message = f"You were kicked from {ctx.guild}!"
+        if reason:
+            dm_message += f" Reason given: '{reason}'"
+        dm_message += "\nYou can rejoin the server, but please behave this time."
+        try:
+            await user.send(dm_message)
+        except discord.Forbidden:
+            pass
+
+        await user.kick(reason=reason)
+        await ctx.send(f"{user} was kicked! :thumbsup:")
 
 
 async def setup(client):
