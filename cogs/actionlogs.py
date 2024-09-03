@@ -20,8 +20,8 @@ class Actionlogs(commands.Cog):
             cursor.execute(f"DELETE FROM \"{id}\" WHERE cname = ?;", ("actionlogs_channel", ))
             cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("actionlogs_channel", channelid))
         except sqlite3.OperationalError:
-            self.conn.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (cname TEXT, cvalue NULL);")
-            cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("actionlogs_channel", channelid))
+            await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``database.db``. Please ping Luna.")
+            return
 
         self.conn.commit()
         await ctx.send(f"Set actionlog channel to <#{channelid}>")

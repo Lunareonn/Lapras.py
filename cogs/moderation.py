@@ -96,8 +96,7 @@ class Moderation(commands.Cog):
             return await ctx.send("No user was specified!")
         else:
             message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-            user = message.author
-            print(user)
+            user = message.author.id
 
 
 async def setup(client):

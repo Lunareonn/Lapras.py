@@ -12,7 +12,6 @@ class Macros(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def macroadd(self, ctx, name: str, *, content: str):
         id = ctx.message.guild.id
-        self.conn.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (name TEXT, alias TEXT, content TEXT);")
 
         cursor = self.conn.cursor()
         cursor.execute(f"SELECT name FROM \"{id}\"")
@@ -22,7 +21,12 @@ class Macros(commands.Cog):
                 await ctx.send("That macro already exists.")
                 return
 
-        cursor.execute(f"INSERT INTO \"{id}\" (name, content) VALUES(?, ?);", (name, content,))
+        try:
+            cursor.execute(f"INSERT INTO \"{id}\" (name, content) VALUES(?, ?);", (name, content,))
+        except sqlite3.OperationalError:
+            await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``database.db``. Please ping Luna.")
+            return
+
         self.conn.commit()
         await ctx.send(f"Added macro {name}")
 
@@ -36,7 +40,12 @@ class Macros(commands.Cog):
     async def macroremove(self, ctx, name):
         id: str = ctx.message.guild.id
         cursor = self.conn.cursor()
-        cursor.execute(f"DELETE FROM \"{id}\" WHERE name = ?", (name,))
+        try:
+            cursor.execute(f"DELETE FROM \"{id}\" WHERE name = ?", (name,))
+        except sqlite3.OperationalError:
+            await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``database.db``. Please ping Luna.")
+            return
+
         self.conn.commit()
         await ctx.send(f"Removed macro {name}")
 
