@@ -108,6 +108,103 @@ class Utility(commands.Cog):
         embed.set_footer(text=f"Discord.py {discord.__version__} | Python {platform.python_version()}")
         await ctx.send(embed=embed)
 
+    @commands.command()
+    @commands.is_owner()
+    async def dbtest(self, ctx):
+        id = ctx.message.guild.id
+        conn_config = sqlite3.connect("databases/database.db")
+        conn_macros = sqlite3.connect("databases/macros.db")
+
+        config_cursor = conn_config.cursor()
+        macros_cursor = conn_macros.cursor()
+
+        embed = discord.Embed(title="Checking database...",
+                              description="Checking database.db",
+                              colour=0xffffff)
+
+        embed.add_field(name="database.db",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="macros.db",
+                        value="?",
+                        inline=True)
+
+        dbmessage = await ctx.send(embed=embed)
+        configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+        if configcheck == []:
+            config = False
+            embed.set_field_at(index=0, name="database.db", value="FAIL", inline=True)
+            await dbmessage.edit(embed=embed)
+        else:
+            config = True
+            embed.set_field_at(index=0, name="database.db", value="PASS", inline=True)
+            await dbmessage.edit(embed=embed)
+
+        macroscheck = macros_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+        if macroscheck == []:
+            macro = False
+            embed.set_field_at(index=1, name="database.db", value="FAIL", inline=True)
+            await dbmessage.edit(embed=embed)
+        else:
+            macro = True
+            embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
+
+        if config is False or macro is False:
+            embed = discord.Embed(title="Fixing databases...",
+                                  description="Fixing database.db",
+                                  colour=0xf40006)
+            if config is True:
+                embed.add_field(name="database.db", value="PASS", inline=True)
+            else:
+                embed.add_field(name="database.db", value="?", inline=True)
+
+            if macro is True:
+                embed.add_field(name="macros.db", value="PASS", inline=True)
+            else:
+                embed.add_field(name="macros.db", value="?", inline=True)
+
+            await dbmessage.edit(embed=embed)
+            if config is False:
+                conn_config.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (cname TEXT, cvalue NULL);")
+                conn_config.commit()
+                configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+                if configcheck != []:
+                    embed.set_field_at(index=0, name="database.db", value="PASS", inline=True)
+
+                await dbmessage.edit(embed=embed)
+            else:
+                embed.set_field_at(index=0, name="database.db", value="PASS", inline=True)
+                await dbmessage.edit(embed=embed)
+
+            if macro is False:
+                conn_macros.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (name TEXT, alias TEXT, content TEXT);")
+                conn_macros.commit()
+                macroscheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+                if macroscheck != []:
+                    embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
+
+                await dbmessage.edit(embed=embed)
+            else:
+                embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
+                await dbmessage.edit(embed=embed)
+
+            embed = discord.Embed(title="Done!",
+                                  description="Databases fixed.",
+                                  colour=0x0ff103)
+            embed.add_field(name="database.db", value="PASS", inline=True)
+            embed.add_field(name="macros.db", value="PASS", inline=True)
+            await dbmessage.edit(embed=embed)
+
+        if config is True and macro is True:
+            embed = discord.Embed(title="Done!",
+                                  description="Nothing needs to be done.",
+                                  colour=0x0ff103)
+            embed.add_field(name="database.db", value="PASS", inline=True)
+            embed.add_field(name="macros.db", value="PASS", inline=True)
+            await dbmessage.edit(embed=embed)
+        else:
+            pass
+
 
 async def setup(client):
     await client.add_cog(Utility(client))
