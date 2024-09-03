@@ -9,11 +9,18 @@ class Moderation(commands.Cog):
 
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
-    async def ban(self, ctx, user: discord.User, *, reason: str = ""):
+    async def ban(self, ctx, user: Optional[discord.User], *, reason: str = ""):
         if user == ctx.author:
             return await ctx.send("You can't ban yourself!")
         elif user == self.client.user:
             return await ctx.send("I can't ban myself!")
+
+        if user is None and ctx.message.reference is None:
+            return await ctx.send("No user was specified!")
+        else:
+            if user is not None and ctx.message.reference is not None:
+                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                user = message.author
 
         dm_message = f"You have been banned from {ctx.guild}!"
         if reason:
@@ -45,11 +52,18 @@ class Moderation(commands.Cog):
 
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
-    async def bandel(self, ctx, messagedel: int, user: discord.Member, *, reason: str = "Not specified"):
+    async def bandel(self, ctx, messagedel: int, user: Optional[discord.Member], *, reason: str = "Not specified"):
         if user == ctx.author:
             return await ctx.send("You can't ban yourself!")
         elif user == self.client.user:
             return await ctx.send("I can't ban myself!")
+
+        if user is None and ctx.message.reference is None:
+            return await ctx.send("No user was specified!")
+        else:
+            if user is not None and ctx.message.reference is not None:
+                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                user = message.author
 
         dm_message = f"You have been banned from {ctx.guild}!"
         if reason:
