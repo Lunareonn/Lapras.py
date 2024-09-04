@@ -26,8 +26,16 @@ async def on_ready():
 @client.event
 async def on_guild_join(guild):
     id = str(guild.id)
-    conn = sqlite3.connect("databases/database.db")
+    conn = sqlite3.connect("databases/config.db")
     conn.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (cname TEXT, cvalue NULL);")
+    conn.commit()
+
+    conn = sqlite3.connect("databases/macros.db")
+    conn.exeucte(f"CREATE TABLE IF NOT EXISTS \"{id}\" (name TEXT, alias TEXT, content TEXT)")
+    conn.commit()
+
+    conn = sqlite3.connect("databases/mod.db")
+    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
     conn.commit()
     print(f"bot was added to server {guild}")
 

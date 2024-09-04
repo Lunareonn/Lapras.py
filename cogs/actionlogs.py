@@ -7,7 +7,7 @@ import datetime
 class Actionlogs(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect("databases/database.db")
+        self.conn = sqlite3.connect("databases/config.db")
 
     @commands.has_permissions(ban_members=True)
     @commands.command()
@@ -20,8 +20,7 @@ class Actionlogs(commands.Cog):
             cursor.execute(f"DELETE FROM \"{id}\" WHERE cname = ?;", ("actionlogs_channel", ))
             cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("actionlogs_channel", channelid))
         except sqlite3.OperationalError:
-            await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``database.db``. Please ping Luna.")
-            return
+            return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``config.db``. Please ping Luna.")
 
         self.conn.commit()
         await ctx.send(f"Set actionlog channel to <#{channelid}>")

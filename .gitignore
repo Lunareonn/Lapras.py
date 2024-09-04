@@ -4,5 +4,6 @@
 __pycache__/
 .vscode/
 .flake8
-database.db
+config.db
 macros.db
+mod.db

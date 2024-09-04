@@ -7,7 +7,7 @@ from discord.ext import commands
 class Utility(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect('databases/database.db')
+        self.conn = sqlite3.connect('databases/config.db')
 
     @commands.hybrid_group()
     @commands.is_owner()
@@ -112,20 +112,25 @@ class Utility(commands.Cog):
     @commands.is_owner()
     async def dbtest(self, ctx):
         id = ctx.message.guild.id
-        conn_config = sqlite3.connect("databases/database.db")
+        conn_config = sqlite3.connect("databases/config.db")
         conn_macros = sqlite3.connect("databases/macros.db")
+        conn_mod = sqlite3.connect("databases/mod.db")
 
         config_cursor = conn_config.cursor()
         macros_cursor = conn_macros.cursor()
+        mod_cursor = conn_mod.cursor()
 
         embed = discord.Embed(title="Checking database...",
-                              description="Checking database.db",
                               colour=0xffffff)
 
-        embed.add_field(name="database.db",
+        embed.set_author(name="config.db...")
+        embed.add_field(name="config.db",
                         value="?",
                         inline=True)
         embed.add_field(name="macros.db",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="mod.db",
                         value="?",
                         inline=True)
 
@@ -133,50 +138,72 @@ class Utility(commands.Cog):
         configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
         if configcheck == []:
             config = False
-            embed.set_field_at(index=0, name="database.db", value="FAIL", inline=True)
+            embed.set_field_at(index=0, name="config.db", value="FAIL", inline=True)
             await dbmessage.edit(embed=embed)
         else:
             config = True
-            embed.set_field_at(index=0, name="database.db", value="PASS", inline=True)
+            embed.set_field_at(index=0, name="config.db", value="PASS", inline=True)
             await dbmessage.edit(embed=embed)
 
+        embed.set_author(name="macros.db...")
+        await dbmessage.edit(embed=embed)
         macroscheck = macros_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
         if macroscheck == []:
             macro = False
-            embed.set_field_at(index=1, name="database.db", value="FAIL", inline=True)
+            embed.set_field_at(index=1, name="macros.db", value="FAIL", inline=True)
             await dbmessage.edit(embed=embed)
         else:
             macro = True
             embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
+            await dbmessage.edit(embed=embed)
 
-        if config is False or macro is False:
-            embed = discord.Embed(title="Fixing databases...",
-                                  description="Fixing database.db",
+        embed.set_author(name="mod.db...")
+        modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+        if modcheck == []:
+            mod = False
+            embed.set_field_at(index=2, name="mod.db", value="FAIL", inline=True)
+            await dbmessage.edit(embed=embed)
+        else:
+            mod = True
+            embed.set_field_at(index=2, name="mod.db", value="PASS", inline=True)
+
+        if config is False or macro is False or mod is False:
+            embed = discord.Embed(title="Fixing databases",
+                                  description="...",
                                   colour=0xf40006)
             if config is True:
-                embed.add_field(name="database.db", value="PASS", inline=True)
+                embed.add_field(name="config.db", value="PASS", inline=True)
             else:
-                embed.add_field(name="database.db", value="?", inline=True)
+                embed.add_field(name="config.db", value="?", inline=True)
 
             if macro is True:
                 embed.add_field(name="macros.db", value="PASS", inline=True)
             else:
                 embed.add_field(name="macros.db", value="?", inline=True)
 
+            if mod is True:
+                embed.add_field(name="mod.db", value="PASS", inline=True)
+            else:
+                embed.add_field(name="mod.db", value="?", inline=True)
+
             await dbmessage.edit(embed=embed)
             if config is False:
+                embed.set_author(name="config.db...")
+                await dbmessage.edit(embed=embed)
                 conn_config.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (cname TEXT, cvalue NULL);")
                 conn_config.commit()
                 configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
                 if configcheck != []:
-                    embed.set_field_at(index=0, name="database.db", value="PASS", inline=True)
+                    embed.set_field_at(index=0, name="config.db", value="PASS", inline=True)
 
                 await dbmessage.edit(embed=embed)
             else:
-                embed.set_field_at(index=0, name="database.db", value="PASS", inline=True)
+                embed.set_field_at(index=0, name="config.db", value="PASS", inline=True)
                 await dbmessage.edit(embed=embed)
 
             if macro is False:
+                embed.set_author(name="macros.db...")
+                await dbmessage.edit(embed=embed)
                 conn_macros.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (name TEXT, alias TEXT, content TEXT);")
                 conn_macros.commit()
                 macroscheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
@@ -188,20 +215,36 @@ class Utility(commands.Cog):
                 embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
                 await dbmessage.edit(embed=embed)
 
+            if mod is False:
+                embed.set_author(name="mod.db...")
+                await dbmessage.edit(embed=embed)
+                conn_mod.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
+                conn_mod.commit()
+                modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+                if modcheck != []:
+                    embed.set_field_at(index=2, name="mod.db", value="PASS")
+
+                await dbmessage.edit(embed=embed)
+            else:
+                embed.set_field_at(index=1, name="mod.db", value="PASS", inline=True)
+                await dbmessage.edit(embed=embed)
+
             embed = discord.Embed(title="Done!",
                                   description="Databases fixed.",
                                   colour=0x0ff103)
-            embed.add_field(name="database.db", value="PASS", inline=True)
+            embed.add_field(name="config.db", value="PASS", inline=True)
             embed.add_field(name="macros.db", value="PASS", inline=True)
-            await dbmessage.edit(embed=embed)
+            embed.add_field(name="mod.db", value="PASS", inline=True)
+            return await dbmessage.edit(embed=embed)
 
         if config is True and macro is True:
             embed = discord.Embed(title="Done!",
-                                  description="Nothing needs to be done.",
+                                  description="Everything seems fine.",
                                   colour=0x0ff103)
-            embed.add_field(name="database.db", value="PASS", inline=True)
+            embed.add_field(name="config.db", value="PASS", inline=True)
             embed.add_field(name="macros.db", value="PASS", inline=True)
-            await dbmessage.edit(embed=embed)
+            embed.add_field(name="mod.db", value="PASS", inline=True)
+            return await dbmessage.edit(embed=embed)
         else:
             pass
 

@@ -1,4 +1,5 @@
 import discord
+import sqlite3
 from typing import Optional
 from discord.ext import commands
 
@@ -6,6 +7,7 @@ from discord.ext import commands
 class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.conn = sqlite3.connect("databases/mod.db")
 
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
@@ -142,6 +144,23 @@ class Moderation(commands.Cog):
 
         await user.kick(reason=reason)
         await ctx.send(f"{user} was kicked! :thumbsup:")
+
+    # @commands.has_permissions(moderate_members=True)
+    # @commands.command()
+    # async def warn(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
+    #     cursor = self.conn.cursor()
+
+    #     if user == ctx.author:
+    #         return await ctx.send("You can't warn yourself!")
+    #     elif user == self.client.user:
+    #         return await ctx.send("I can't warn myself!")
+
+    #     if user is None and ctx.message.reference is None:
+    #         return await ctx.send("No user was specified!")
+    #     else:
+    #         if user is not None and ctx.message.reference is not None:
+    #             message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+    #             user = message.author
 
 
 async def setup(client):
