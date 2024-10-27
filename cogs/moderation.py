@@ -8,21 +8,23 @@ class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.conn = sqlite3.connect("databases/mod.db")
+        self.cfg_conn = sqlite3.connect("databases/config.db")
 
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def ban(self, ctx, user: Optional[discord.User], *, reason: str = ""):
-        if user == ctx.author:
-            return await ctx.send("You can't ban yourself!")
-        elif user == self.client.user:
-            return await ctx.send("I can't ban myself!")
+        id = ctx.guild.id
 
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
         else:
-            if user is not None and ctx.message.reference is not None:
+            if ctx.message.reference is not None:
                 message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
                 user = message.author
+        if user == ctx.author:
+            return await ctx.send("You can't ban yourself!")
+        elif user == self.client.user:
+            return await ctx.send("I can't ban myself!")
 
         dm_message = f"You have been banned from {ctx.guild}!"
         if reason:
@@ -31,6 +33,19 @@ class Moderation(commands.Cog):
             await user.send(dm_message)
         except discord.HTTPException:
             pass
+
+        cursor = self.cfg_conn.cursor()
+        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        channel_id = cursor.fetchone()[1]
+        channel = await self.client.fetch_channel(channel_id)
+
+        modlog_embed = discord.Embed(title="User was banned!", description=f"{user} was banned!")
+        print(user.avatar.url)
+        modlog_embed.set_author(name=f"{user.display_name} ({user})", icon_url=f"{user.avatar.url}")
+        if reason:
+            modlog_embed.add_field(name="Reason", value=f"{reason}", inline=True)
+        modlog_embed.add_field(name="Issuer", value=f"{ctx.author}")
+        await channel.send(embed=modlog_embed)
 
         await ctx.guild.ban(user, delete_message_seconds=0, reason=reason)
         await ctx.send(f"{user} has been banned! :thumbsup:")
@@ -55,17 +70,16 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def bandel(self, ctx, messagedel: int, user: Optional[discord.Member], *, reason: str = "Not specified"):
+        if user is None and ctx.message.reference is None:
+            return await ctx.send("No user was specified!")
+        else:
+            if ctx.message.reference is not None:
+                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                user = message.author
         if user == ctx.author:
             return await ctx.send("You can't ban yourself!")
         elif user == self.client.user:
             return await ctx.send("I can't ban myself!")
-
-        if user is None and ctx.message.reference is None:
-            return await ctx.send("No user was specified!")
-        else:
-            if user is not None and ctx.message.reference is not None:
-                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-                user = message.author
 
         dm_message = f"You have been banned from {ctx.guild}!"
         if reason:
@@ -74,6 +88,18 @@ class Moderation(commands.Cog):
             await user.send(dm_message)
         except discord.HTTPException:
             pass
+
+        cursor = self.cfg_conn.cursor()
+        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        channel_id = cursor.fetchone()[1]
+        channel = await self.client.fetch_channel(channel_id)
+
+        modlog_embed = discord.Embed(title="User was banned!", description=f"{user} was banned!")
+        modlog_embed.set_author(name=f"{user.display_name} ({user})", icon_url=f"{user.avatar.url}")
+        if reason:
+            modlog_embed.add_field(name="Reason", value=f"{reason}", inline=True)
+        modlog_embed.add_field(name="Issuer", value=f"{ctx.author}")
+        await channel.send(embed=modlog_embed)
 
         await ctx.guild.ban(user, delete_message_days=messagedel, reason=reason)
         await ctx.send(f"{user} has been banned! :thumbsup:")
@@ -98,6 +124,16 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def unban(self, ctx, user: discord.Member):
+        cursor = self.cfg_conn.cursor()
+        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        channel_id = cursor.fetchone()[1]
+        channel = await self.client.fetch_channel(channel_id)
+
+        modlog_embed = discord.Embed(title="User was unbanned!", description=f"{user} was unbanned!")
+        modlog_embed.set_author(name=f"{user.display_name} ({user})", icon_url=f"{user.avatar.url}")
+        modlog_embed.add_field(name="Issuer", value=f"{ctx.author}")
+        await channel.send(embed=modlog_embed)
+
         await ctx.guild.unban(user)
         await ctx.send(f"{user} was unbanned! :thumbsup:")
 
@@ -129,7 +165,7 @@ class Moderation(commands.Cog):
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
         else:
-            if user is not None and ctx.message.reference is not None:
+            if ctx.message.reference is not None:
                 message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
                 user = message.author
 
@@ -142,25 +178,50 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             pass
 
+        cursor = self.cfg_conn.cursor()
+        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        channel_id = cursor.fetchone()[1]
+        channel = await self.client.fetch_channel(channel_id)
+
+        modlog_embed = discord.Embed(title="User was kicked!", description=f"{user} was kicked!")
+        modlog_embed.set_author(name=f"{user.display_name} ({user})", icon_url=f"{user.avatar.url}")
+        modlog_embed.add_field(name="Issuer", value=f"{ctx.author}")
+        await channel.send(embed=modlog_embed)
+
         await user.kick(reason=reason)
         await ctx.send(f"{user} was kicked! :thumbsup:")
 
-    # @commands.has_permissions(moderate_members=True)
-    # @commands.command()
-    # async def warn(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
-    #     cursor = self.conn.cursor()
+    @commands.has_permissions(moderate_members=True)
+    @commands.command()
+    async def warn(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
+        cursor = self.conn.cursor()
+        id = str(ctx.message.guild.id)
 
-    #     if user == ctx.author:
-    #         return await ctx.send("You can't warn yourself!")
-    #     elif user == self.client.user:
-    #         return await ctx.send("I can't warn myself!")
+        if user is None and ctx.message.reference is None:
+            return await ctx.send("No user was specified!")
+        else:
+            if ctx.message.reference is not None:
+                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                user = message.author
 
-    #     if user is None and ctx.message.reference is None:
-    #         return await ctx.send("No user was specified!")
-    #     else:
-    #         if user is not None and ctx.message.reference is not None:
-    #             message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-    #             user = message.author
+        cursor.execute(f"SELECT count FROM \"{id}\" WHERE userid = '{user.id}'")
+        warn_count = cursor.fetchall()
+        print(warn_count)
+        # if warn_count is None:
+        #    warn_count = 1
+        #     cursor.execute(f"INSERT INTO \"{id}\" (userid, username, issuer, reason, count, timestamp) VALUES(?, ?, ?, ?, ?, ?);", (user.id, user.name, ctx.author.id, reason, warn_count, "now"))
+        # elif warn_count is not None:
+        #     print("Before:", warn_count)
+        #     warn_count = 1 + warn_count[1]
+        #     print("After:", warn_count)
+        #     await ctx.send(f"This user has {warn_count} warnings")
+        #     cursor.execute(f"INSERT INTO \"{id}\" (userid, username, issuer, reason, count, timestamp) VALUES(?, ?, ?, ?, ?, ?);", (user.id, user.name, ctx.author.id, reason, warn_count, "now"))
+
+        self.conn.commit()
+        # if user == ctx.author:
+        #     return await ctx.send("You can't warn yourself!")
+        # elif user == self.client.user:
+        #     return await ctx.send("I can't warn myself!")
 
 
 async def setup(client):

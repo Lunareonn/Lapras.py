@@ -43,7 +43,10 @@ class Actionlogs(commands.Cog):
         embed.set_footer(text='')
 
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        try:
+            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        except sqlite3.OperationalError:
+            return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
 
@@ -67,7 +70,10 @@ class Actionlogs(commands.Cog):
             embed.set_footer(text='')
 
             cursor = self.conn.cursor()
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            try:
+                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            except sqlite3.OperationalError:
+                return
             channelid = cursor.fetchone()[1]
             channel = await self.client.fetch_channel(channelid)
 
@@ -81,7 +87,10 @@ class Actionlogs(commands.Cog):
             embed.set_footer(text='')
 
             cursor = self.conn.cursor()
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            try:
+                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            except sqlite3.OperationalError:
+                return
             channelid = cursor.fetchone()[1]
             channel = await self.client.fetch_channel(channelid)
 
@@ -99,7 +108,10 @@ class Actionlogs(commands.Cog):
         embed.set_footer(text=f"Member Count: {member.guild.member_count}")
 
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        try:
+            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        except sqlite3.OperationalError:
+            return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
 
@@ -119,43 +131,14 @@ class Actionlogs(commands.Cog):
             embed.set_footer(text=f"Member Count: {member.guild.member_count} ")
 
             cursor = self.conn.cursor()
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            try:
+                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            except sqlite3.OperationalError:
+                return
             channelid = cursor.fetchone()[1]
             channel = await self.client.fetch_channel(channelid)
 
             await channel.send(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_member_ban(self, guild, member):
-        id = guild.id
-
-        embed = discord.Embed(title="A member has been banned", description=f"<@{member.id}> ({member.name}) has been banned!", color=0xa7124a)
-        embed.set_thumbnail(url=member.display_avatar)
-        embed.timestamp = datetime.datetime.now()
-        embed.set_footer(text=f"Member Count: {member.guild.member_count}")
-
-        cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        channelid = cursor.fetchone()[1]
-        channel = await self.client.fetch_channel(channelid)
-
-        await channel.send(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_member_unban(self, guild, member):
-        id = guild.id
-
-        embed = discord.Embed(title="A member has been unbanned", description=f"<@{member.id}> ({member.name}) has been unbanned!", color=0xa7124a)
-        embed.set_thumbnail(url=member.display_avatar)
-        embed.timestamp = datetime.datetime.now()
-        embed.set_footer(text="")
-
-        cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        channelid = cursor.fetchone()[1]
-        channel = await self.client.fetch_channel(channelid)
-
-        await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_role_create(self, role):
@@ -165,7 +148,10 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
 
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        try:
+            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        except sqlite3.OperationalError:
+            return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
 
@@ -179,7 +165,10 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
 
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        try:
+            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        except sqlite3.OperationalError:
+            return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
 

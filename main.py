@@ -1,6 +1,7 @@
 import discord
 import os
 import sqlite3
+import config
 from dotenv import load_dotenv
 from discord.ext import commands
 
@@ -42,10 +43,12 @@ async def on_guild_join(guild):
 
 @client.event
 async def setup_hook():
-    for filename in os.listdir("./cogs"):
-        if filename.endswith(".py"):
-            await client.load_extension(f"cogs.{filename[:-3]}")
-            print(f"Loaded cog: {filename[:-3]}")
+    for cog in config.loaded_cogs:
+        try:
+            await client.load_extension(f"{cog}")
+            print(f"Loaded cog: {cog}")
+        except Exception as e:
+            print(f"Failed to load cog {cog}:", e)
 
 TOKEN = os.getenv("TOKEN")
 client.run(TOKEN)

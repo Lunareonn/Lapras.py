@@ -248,6 +248,10 @@ class Utility(commands.Cog):
         else:
             pass
 
+    # @commands.command()
+    # @commands.has_permissions(manage_members=True)
+    # async def addstaffrole(self, ctx, role: discord.Role):
+
 
 async def setup(client):
     await client.add_cog(Utility(client))

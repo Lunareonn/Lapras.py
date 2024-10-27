@@ -67,6 +67,7 @@ class Macros(commands.Cog):
         if content is None:
             return await ctx.send(f"<@{ctx.message.author.id}>: Macro '{name}' is not a valid macro")
 
+        await ctx.message.delete()
         await ctx.send(f"{content}")
 
     @m.error

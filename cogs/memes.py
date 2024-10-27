@@ -16,7 +16,7 @@ class Memes(commands.Cog):
                 messageid = ctx.message.reference.message_id
                 message = await ctx.fetch_message(messageid)
                 await ctx.message.delete()
-                await ctx.send(owo.owo(message.clean_content), reference=ctx.message.reference, mention_author=True)
+                await ctx.send(owo.owo(message.clean_content), reference=ctx.message.reference, mention_author=False)
 
 
 async def setup(client):
