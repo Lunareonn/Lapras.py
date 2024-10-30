@@ -35,6 +35,11 @@ class TF2Comp(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+        global available_players
+        global unavailable_players
+        available_players = []
+        unavailable_players = []
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         regex_logs = r"http(s|):\/\/(www\.|)logs\.tf\/\d+"
@@ -103,6 +108,7 @@ class TF2Comp(commands.Cog):
     @commands.check(check_if_leader)
     @commands.command()
     async def available(self, ctx):
+        await ctx.message.delete()
         global vote_message_id
         global embed
 
@@ -153,23 +159,31 @@ class TF2Comp(commands.Cog):
 
         channel = self.client.get_channel(payload.channel_id)
         vote_message = await channel.fetch_message(vote_message_id)
+        member = await channel.guild.fetch_member(payload.user_id)
 
         if payload.member == self.client.user:
             return
 
         try:
             if payload.message_id == vote_message_id:
-                is_main = any(role.id in main_roles for role in payload.member.roles)
-                class_role = any(role.id in roster_roles for role in payload.member.roles)
+                is_main = any(role.id in main_roles for role in member.roles)
+                class_role = any(role.id in roster_roles for role in member.roles)
                 if payload.emoji.name == u'\u2705':
                     if is_main and class_role:
-                        for role in payload.member.roles:
+                        for role in member.roles:
                             if role.id in config.roster_roles:
                                 class_id = config.roster_roles.index(role.id)
 
+                                # if payload.user_id in unavailable_players:
+                                #     await vote_message.remove_reaction(u'\u274E', member)
+
                                 embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="Yes", inline=True)
+                                available_players.append(payload.user_id)
+                                print("+ AV:", available_players)
                                 await vote_message.edit(embed=embed)
                                 break
+                    else:
+                        await vote_message.remove_reaction(u'\u2705', member)
 
                 if payload.emoji.name == u'\u274E':
                     if is_main and class_role:
@@ -177,7 +191,58 @@ class TF2Comp(commands.Cog):
                             if role.id in config.roster_roles:
                                 class_id = config.roster_roles.index(role.id)
 
+                                # if payload.user_id in available_players:
+                                #     await vote_message.remove_reaction(u'\u2705', member)
+
                                 embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="No", inline=True)
+                                unavailable_players.append(payload.user_id)
+                                print("+ UNAV:", unavailable_players)
+                                await vote_message.edit(embed=embed)
+                                break
+                    else:
+                        await vote_message.remove_reaction(u'\u274E', member)
+        except Exception as e:
+            await channel.send(e)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        global vote_message_id
+        global embed
+        main_roles = config.main_or_sub
+        roster_roles = config.roster_roles
+
+        channel = self.client.get_channel(payload.channel_id)
+        vote_message = await channel.fetch_message(vote_message_id)
+        member = await channel.guild.fetch_member(payload.user_id)
+
+        if payload.member == self.client.user:
+            return
+
+        try:
+            if payload.message_id == vote_message_id:
+                is_main = any(role.id in main_roles for role in member.roles)
+                class_role = any(role.id in roster_roles for role in member.roles)
+                if payload.emoji.name == u'\u2705':
+                    if is_main and class_role:
+                        for role in member.roles:
+                            if role.id in config.roster_roles:
+                                class_id = config.roster_roles.index(role.id)
+
+                                embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="?", inline=True)
+                                available_players.remove(payload.user_id)
+                                print("- AV:", available_players)
+                                await vote_message.edit(embed=embed)
+                                break
+
+                if payload.emoji.name == u'\u274E':
+                    if is_main and class_role:
+                        for role in member.roles:
+                            if role.id in config.roster_roles:
+                                class_id = config.roster_roles.index(role.id)
+
+                                embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="?", inline=True)
+                                unavailable_players.remove(payload.user_id)
+                                print("- UNAV:", unavailable_players)
                                 await vote_message.edit(embed=embed)
                                 break
         except NameError:
