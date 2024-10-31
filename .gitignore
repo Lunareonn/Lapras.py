@@ -7,3 +7,4 @@ __pycache__/
 config.db
 macros.db
 mod.db
+*.log

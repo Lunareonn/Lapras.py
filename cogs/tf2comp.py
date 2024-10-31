@@ -6,6 +6,7 @@ import grpc
 import datetime
 import requests
 import json
+import logging
 import config
 from enum import Enum
 from funcs.checks import check_if_leader
@@ -98,10 +99,7 @@ class TF2Comp(commands.Cog):
                 await message.channel.send(embed=embed, file=file)
                 os.remove("logs.png")
             except Exception as e:
-                file = discord.File(fp="cat.mp4")
-                await message.channel.send(file=file)
-                await message.channel.send(f"mfw '{e}'")
-                print(e)
+                return self.client.log.exception(e)
         else:
             pass
 
@@ -202,7 +200,7 @@ class TF2Comp(commands.Cog):
                     else:
                         await vote_message.remove_reaction(u'\u274E', member)
         except Exception as e:
-            await channel.send(e)
+            self.client.log.exception(e)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -245,8 +243,8 @@ class TF2Comp(commands.Cog):
                                 print("- UNAV:", unavailable_players)
                                 await vote_message.edit(embed=embed)
                                 break
-        except NameError:
-            return
+        except Exception as e:
+            self.client.log.exception(e)
 
 
 async def setup(client):
