@@ -1,6 +1,8 @@
 import discord
 import os
 import sqlite3
+import logging
+import logging.handlers
 import config
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -11,6 +13,21 @@ client = commands.AutoShardedBot(shard_count=1,
                                  command_prefix="$",
                                  intents=intents)
 
+log = logging.getLogger('discord')
+log.setLevel(logging.DEBUG)
+logging.getLogger('discord.http').setLevel(logging.INFO)
+
+handler = logging.handlers.RotatingFileHandler(
+    filename="discord.log",
+    encoding="utf-8",
+    maxBytes=64 * 1024 * 1024,
+    backupCount=5
+)
+dt_frmt = "%d-%m-%Y %H:%M:%S"
+formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_frmt, style="{")
+handler.setFormatter(formatter)
+log.addHandler(handler)
+client.log = log
 
 @client.command()
 @commands.is_owner()
@@ -47,8 +64,11 @@ async def setup_hook():
         try:
             await client.load_extension(f"{cog}")
             print(f"Loaded cog: {cog}")
+            log.info(f"Loaded cog: {cog}")
         except Exception as e:
             print(f"Failed to load cog {cog}:", e)
+            log.exception(f"Failed to load cog {cog}:", e)
 
 TOKEN = os.getenv("TOKEN")
-client.run(TOKEN)
+DEV_TOKEN = os.getenv("DEV_TOKEN")
+client.run(DEV_TOKEN, log_handler=None)

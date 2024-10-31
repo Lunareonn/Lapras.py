@@ -22,7 +22,8 @@ class Macros(commands.Cog):
 
         try:
             cursor.execute(f"INSERT INTO \"{id}\" (name, content) VALUES(?, ?);", (name, content,))
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            self.client.log.exception(e)
             return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``config.db``. Please ping Luna.")
 
         self.conn.commit()
@@ -40,7 +41,8 @@ class Macros(commands.Cog):
         cursor = self.conn.cursor()
         try:
             cursor.execute(f"DELETE FROM \"{id}\" WHERE name = ?", (name,))
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            self.client.log.exception(e)
             return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``macros.db``. Please ping Luna.")
 
         self.conn.commit()
