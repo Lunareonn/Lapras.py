@@ -19,7 +19,8 @@ class Actionlogs(commands.Cog):
         try:
             cursor.execute(f"DELETE FROM \"{id}\" WHERE cname = ?;", ("actionlogs_channel", ))
             cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("actionlogs_channel", channelid))
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            self.client.log.exception(e)
             return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``config.db``. Please ping Luna.")
 
         self.conn.commit()
@@ -45,7 +46,8 @@ class Actionlogs(commands.Cog):
         cursor = self.conn.cursor()
         try:
             cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            self.client.log.exception(e)
             return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
@@ -72,7 +74,8 @@ class Actionlogs(commands.Cog):
             cursor = self.conn.cursor()
             try:
                 cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-            except sqlite3.OperationalError:
+            except sqlite3.OperationalError as e:
+                self.client.log.exception(e)
                 return
             channelid = cursor.fetchone()[1]
             channel = await self.client.fetch_channel(channelid)
@@ -89,7 +92,8 @@ class Actionlogs(commands.Cog):
             cursor = self.conn.cursor()
             try:
                 cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-            except sqlite3.OperationalError:
+            except sqlite3.OperationalError as e:
+                self.client.log.exception(e)
                 return
             channelid = cursor.fetchone()[1]
             channel = await self.client.fetch_channel(channelid)
@@ -110,7 +114,8 @@ class Actionlogs(commands.Cog):
         cursor = self.conn.cursor()
         try:
             cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            self.client.log.exception(e)
             return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
@@ -133,7 +138,8 @@ class Actionlogs(commands.Cog):
             cursor = self.conn.cursor()
             try:
                 cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-            except sqlite3.OperationalError:
+            except sqlite3.OperationalError as e:
+                self.client.log.exception(e)
                 return
             channelid = cursor.fetchone()[1]
             channel = await self.client.fetch_channel(channelid)
@@ -150,7 +156,8 @@ class Actionlogs(commands.Cog):
         cursor = self.conn.cursor()
         try:
             cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            self.client.log.exception(e)
             return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
@@ -167,7 +174,8 @@ class Actionlogs(commands.Cog):
         cursor = self.conn.cursor()
         try:
             cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError:
+        except sqlite3.OperationalError as e:
+            self.client.log.exception(e)
             return
         channelid = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channelid)
