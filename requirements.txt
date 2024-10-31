@@ -4,3 +4,4 @@ text-to-owo
 selenium
 grpcio
 Pillow
+requests
