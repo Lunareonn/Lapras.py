@@ -70,5 +70,4 @@ async def setup_hook():
             log.exception(f"Failed to load cog {cog}:", e)
 
 TOKEN = os.getenv("TOKEN")
-DEV_TOKEN = os.getenv("DEV_TOKEN")
-client.run(DEV_TOKEN, log_handler=None)
+client.run(TOKEN)
