@@ -32,14 +32,12 @@ client.log = log
 
 @client.event
 async def on_ready():
-    print(f"Ready. Logged in as {client.user}")
+    log.info(f"Ready. Logged in as {client.user}")
 
 
 @client.event
 async def on_guild_join(guild):
-    # id = str(guild.id)
-
-    actions.setup_database()
+    actions.register_server(client.conn, guild.id)
     log.info(f"Bot was added to server {guild}")
 
 
@@ -48,7 +46,6 @@ async def setup_hook():
     for cog in config.loaded_cogs:
         try:
             await client.load_extension(f"{cog}")
-            print(f"Loaded cog: {cog}")
             log.info(f"Loaded cog: {cog}")
         except Exception as e:
             print(f"Failed to load cog {cog}:", e)
@@ -65,4 +62,5 @@ if __name__ == "__main__":
             database=os.getenv("db_name")
         )
     actions.setup_database(conn)
-    client.run(TOKEN, log_handler=None)
+    client.conn = conn
+    client.run(TOKEN)
