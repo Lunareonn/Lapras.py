@@ -42,6 +42,7 @@ async def on_guild_join(guild):
     actions.setup_database()
     log.info(f"Bot was added to server {guild}")
 
+
 @client.event
 async def setup_hook():
     for cog in config.loaded_cogs:
@@ -53,13 +54,15 @@ async def setup_hook():
             print(f"Failed to load cog {cog}:", e)
             log.exception(f"Failed to load cog {cog}:", e)
 
-from funcs.actions import setup_database, connect_database
 
-@commands.command()
-@commands.is_owner()
-async def dbtest():
-    connect_database()
-    setup_database()
-
-TOKEN = os.getenv("TOKEN")
-client.run(TOKEN, log_handler=None)
+if __name__ == "__main__":
+    TOKEN = os.getenv("TOKEN")
+    conn = mariadb.connect(
+            user=os.getenv("db_user"),
+            password=os.getenv("db_pass"),
+            host=os.getenv("db_host"),
+            port=int(os.getenv("db_port")),
+            database=os.getenv("db_name")
+        )
+    actions.setup_database(conn)
+    client.run(TOKEN, log_handler=None)
