@@ -42,7 +42,6 @@ async def on_guild_join(guild):
     actions.setup_database()
     log.info(f"Bot was added to server {guild}")
 
-
 @client.event
 async def setup_hook():
     for cog in config.loaded_cogs:
@@ -54,6 +53,13 @@ async def setup_hook():
             print(f"Failed to load cog {cog}:", e)
             log.exception(f"Failed to load cog {cog}:", e)
 
+from funcs.actions import setup_database, connect_database
+
+@commands.command()
+@commands.is_owner()
+async def dbtest():
+    connect_database()
+    setup_database()
+
 TOKEN = os.getenv("TOKEN")
-DEV_TOKEN = os.getenv("DEV_TOKEN")
-client.run(DEV_TOKEN, log_handler=None)
+client.run(TOKEN, log_handler=None)
