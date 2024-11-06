@@ -13,7 +13,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def ban(self, ctx, user: Optional[discord.User], *, reason: str = ""):
-        id = ctx.guild.id
+        server_id = ctx.guild.id
 
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
@@ -35,7 +35,7 @@ class Moderation(commands.Cog):
             pass
 
         cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         channel_id = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channel_id)
 
@@ -70,6 +70,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def bandel(self, ctx, messagedel: int, user: Optional[discord.Member], *, reason: str = "Not specified"):
+        server_id = ctx.guild.id
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
         else:
@@ -90,7 +91,7 @@ class Moderation(commands.Cog):
             pass
 
         cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         channel_id = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channel_id)
 
@@ -124,8 +125,9 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def unban(self, ctx, user: discord.Member):
+        server_id = ctx.guild.id
         cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         channel_id = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channel_id)
 
@@ -157,6 +159,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(kick_members=True, moderate_members=True)
     @commands.command()
     async def kick(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
+        server_id = ctx.guild.id
         if user == ctx.author:
             return await ctx.send("You can't kick yourself!")
         elif user == self.client.user:
@@ -179,7 +182,7 @@ class Moderation(commands.Cog):
             pass
 
         cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         channel_id = cursor.fetchone()[1]
         channel = await self.client.fetch_channel(channel_id)
 
@@ -190,38 +193,6 @@ class Moderation(commands.Cog):
 
         await user.kick(reason=reason)
         await ctx.send(f"{user} was kicked! :thumbsup:")
-
-    @commands.has_permissions(moderate_members=True)
-    @commands.command()
-    async def warn(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
-        cursor = self.conn.cursor()
-        id = str(ctx.message.guild.id)
-
-        if user is None and ctx.message.reference is None:
-            return await ctx.send("No user was specified!")
-        else:
-            if ctx.message.reference is not None:
-                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-                user = message.author
-
-        cursor.execute(f"SELECT count FROM \"{id}\" WHERE userid = '{user.id}'")
-        warn_count = cursor.fetchall()
-        print(warn_count)
-        # if warn_count is None:
-        #    warn_count = 1
-        #     cursor.execute(f"INSERT INTO \"{id}\" (userid, username, issuer, reason, count, timestamp) VALUES(?, ?, ?, ?, ?, ?);", (user.id, user.name, ctx.author.id, reason, warn_count, "now"))
-        # elif warn_count is not None:
-        #     print("Before:", warn_count)
-        #     warn_count = 1 + warn_count[1]
-        #     print("After:", warn_count)
-        #     await ctx.send(f"This user has {warn_count} warnings")
-        #     cursor.execute(f"INSERT INTO \"{id}\" (userid, username, issuer, reason, count, timestamp) VALUES(?, ?, ?, ?, ?, ?);", (user.id, user.name, ctx.author.id, reason, warn_count, "now"))
-
-        self.conn.commit()
-        # if user == ctx.author:
-        #     return await ctx.send("You can't warn yourself!")
-        # elif user == self.client.user:
-        #     return await ctx.send("I can't warn myself!")
 
 
 async def setup(client):

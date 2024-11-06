@@ -12,13 +12,13 @@ class Actionlogs(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.command()
     async def setlogs(self, ctx, channel: discord.TextChannel):
-        id = ctx.message.guild.id
+        server_id = ctx.message.guild.id
 
         channelid = str(channel.id)
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"DELETE FROM \"{id}\" WHERE cname = ?;", ("actionlogs_channel", ))
-            cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("actionlogs_channel", channelid))
+            cursor.execute(f"DELETE FROM \"{server_id}\" WHERE cname = ?;", ("actionlogs_channel", ))
+            cursor.execute(f"INSERT INTO \"{server_id}\" (cname, cvalue) VALUES(?, ?);", ("actionlogs_channel", channelid))
         except sqlite3.OperationalError as e:
             self.client.log.exception(e)
             return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``config.db``. Please ping Luna.")
@@ -28,7 +28,7 @@ class Actionlogs(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, message_before, message_after):
-        id = str(message_before.guild.id)
+        server_id = str(message_before.guild.id)
 
         if message_before.author.bot:
             return
@@ -45,7 +45,7 @@ class Actionlogs(commands.Cog):
 
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         except sqlite3.OperationalError as e:
             self.client.log.exception(e)
             return
@@ -56,7 +56,7 @@ class Actionlogs(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        id = str(message.guild.id)
+        server_id = str(message.guild.id)
 
         if message.author.bot:
             return
@@ -73,7 +73,7 @@ class Actionlogs(commands.Cog):
 
             cursor = self.conn.cursor()
             try:
-                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+                cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
             except sqlite3.OperationalError as e:
                 self.client.log.exception(e)
                 return
@@ -91,7 +91,7 @@ class Actionlogs(commands.Cog):
 
             cursor = self.conn.cursor()
             try:
-                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+                cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
             except sqlite3.OperationalError as e:
                 self.client.log.exception(e)
                 return
@@ -102,7 +102,7 @@ class Actionlogs(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        id = member.guild.id
+        server_id = member.guild.id
 
         embed = discord.Embed(title="A member has joined", description=f"<@{member.id}> ({member.name}) has joined the server!", color=0x4fff1c)
         embed.set_thumbnail(url=member.display_avatar)
@@ -113,7 +113,7 @@ class Actionlogs(commands.Cog):
 
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         except sqlite3.OperationalError as e:
             self.client.log.exception(e)
             return
@@ -124,7 +124,7 @@ class Actionlogs(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        id = member.guild.id
+        server_id = member.guild.id
 
         try:
             await member.guild.fetch_ban(member)
@@ -137,7 +137,7 @@ class Actionlogs(commands.Cog):
 
             cursor = self.conn.cursor()
             try:
-                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+                cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
             except sqlite3.OperationalError as e:
                 self.client.log.exception(e)
                 return
@@ -148,14 +148,14 @@ class Actionlogs(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_create(self, role):
-        id = role.guild.id
+        server_id = role.guild.id
 
         embed = discord.Embed(title="A role has been created", description=f"Role name: {role.name}")
         embed.timestamp = datetime.datetime.now()
 
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         except sqlite3.OperationalError as e:
             self.client.log.exception(e)
             return
@@ -166,14 +166,14 @@ class Actionlogs(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role):
-        id = role.guild.id
+        server_id = role.guild.id
 
         embed = discord.Embed(title="A role has been deleted", description=f"Role name: {role.name}")
         embed.timestamp = datetime.datetime.now()
 
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
+            cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
         except sqlite3.OperationalError as e:
             self.client.log.exception(e)
             return

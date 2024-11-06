@@ -1,4 +1,3 @@
-# import discord
 import sqlite3
 from discord.ext import commands
 
@@ -11,17 +10,17 @@ class Macros(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)
     async def macroadd(self, ctx, name: str, *, content: str):
-        id = ctx.message.guild.id
+        server_id = ctx.message.guild.id
 
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT name FROM \"{id}\"")
+        cursor.execute(f"SELECT name FROM \"{server_id}\"")
         rows = cursor.fetchall()
         for r in rows:
             if r == name:
                 return await ctx.send("That macro already exists.")
 
         try:
-            cursor.execute(f"INSERT INTO \"{id}\" (name, content) VALUES(?, ?);", (name, content,))
+            cursor.execute(f"INSERT INTO \"{server_id}\" (name, content) VALUES(?, ?);", (name, content,))
         except sqlite3.OperationalError as e:
             self.client.log.exception(e)
             return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``config.db``. Please ping Luna.")
@@ -37,10 +36,10 @@ class Macros(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)
     async def macroremove(self, ctx, name):
-        id: str = ctx.message.guild.id
+        server_id: str = ctx.message.guild.id
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"DELETE FROM \"{id}\" WHERE name = ?", (name,))
+            cursor.execute(f"DELETE FROM \"{server_id}\" WHERE name = ?", (name,))
         except sqlite3.OperationalError as e:
             self.client.log.exception(e)
             return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``macros.db``. Please ping Luna.")
@@ -55,9 +54,9 @@ class Macros(commands.Cog):
 
     @commands.hybrid_command()
     async def m(self, ctx, name):
-        id = ctx.message.guild.id
+        server_id = ctx.message.guild.id
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT name, content FROM \"{id}\"")
+        cursor.execute(f"SELECT name, content FROM \"{server_id}\"")
         macro = cursor.fetchall()
 
         for m in macro:
@@ -81,9 +80,9 @@ class Macros(commands.Cog):
 
     @commands.hybrid_command()
     async def macros(self, ctx):
-        id = ctx.message.guild.id
+        server_id = ctx.message.guild.id
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT name FROM \"{id}\"")
+        cursor.execute(f"SELECT name FROM \"{server_id}\"")
         macro = cursor.fetchall()
 
         macros = "**Available macros:**\n"

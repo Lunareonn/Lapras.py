@@ -29,12 +29,6 @@ handler.setFormatter(formatter)
 log.addHandler(handler)
 client.log = log
 
-@client.command()
-@commands.is_owner()
-async def test(ctx: commands.Context):
-    shard_id = ctx.guild.shard_id
-    await ctx.send(f"shit works on shard {shard_id}")
-
 
 @client.event
 async def on_ready():
@@ -43,17 +37,17 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild):
-    id = str(guild.id)
+    server_id = str(guild.id)
     conn = sqlite3.connect("databases/config.db")
-    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (cname TEXT, cvalue NULL);")
+    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (cname TEXT, cvalue NULL);")
     conn.commit()
 
     conn = sqlite3.connect("databases/macros.db")
-    conn.exeucte(f"CREATE TABLE IF NOT EXISTS \"{id}\" (name TEXT, alias TEXT, content TEXT)")
+    conn.exeucte(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (name TEXT, alias TEXT, content TEXT)")
     conn.commit()
 
     conn = sqlite3.connect("databases/mod.db")
-    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
+    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
     conn.commit()
     print(f"bot was added to server {guild}")
 
@@ -70,4 +64,4 @@ async def setup_hook():
             log.exception(f"Failed to load cog {cog}:", e)
 
 TOKEN = os.getenv("TOKEN")
-client.run(TOKEN)
+client.run(TOKEN, log_handler=None)

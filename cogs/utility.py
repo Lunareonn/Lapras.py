@@ -42,17 +42,17 @@ class Utility(commands.Cog):
     @commands.command()
     async def setautorole(self, ctx, role: discord.Role):
         roleid = role.id
-        id = ctx.guild.id
+        server_id = ctx.guild.id
         cursor = self.conn.cursor()
-        cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("autorole", roleid))
+        cursor.execute(f"INSERT INTO \"{server_id}\" (cname, cvalue) VALUES(?, ?);", ("autorole", roleid))
         self.conn.commit()
         await ctx.send(f"Autorole set! New members will be assigned <@&{roleid}>")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        id = member.guild.id
+        server_id = member.guild.id
         cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'autorole'")
+        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'autorole'")
         roleid = cursor.fetchone()[1]
         role = member.guild.get_role(roleid)
         await member.add_roles(role)
@@ -111,7 +111,7 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def dbtest(self, ctx):
-        id = ctx.message.guild.id
+        server_id = ctx.message.guild.id
         conn_config = sqlite3.connect("databases/config.db")
         conn_macros = sqlite3.connect("databases/macros.db")
         conn_mod = sqlite3.connect("databases/mod.db")
@@ -135,7 +135,7 @@ class Utility(commands.Cog):
                         inline=True)
 
         dbmessage = await ctx.send(embed=embed)
-        configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+        configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
         if configcheck == []:
             config = False
             embed.set_field_at(index=0, name="config.db", value="FAIL", inline=True)
@@ -147,7 +147,7 @@ class Utility(commands.Cog):
 
         embed.set_author(name="macros.db...")
         await dbmessage.edit(embed=embed)
-        macroscheck = macros_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+        macroscheck = macros_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
         if macroscheck == []:
             macro = False
             embed.set_field_at(index=1, name="macros.db", value="FAIL", inline=True)
@@ -158,7 +158,7 @@ class Utility(commands.Cog):
             await dbmessage.edit(embed=embed)
 
         embed.set_author(name="mod.db...")
-        modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+        modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
         if modcheck == []:
             mod = False
             embed.set_field_at(index=2, name="mod.db", value="FAIL", inline=True)
@@ -190,9 +190,9 @@ class Utility(commands.Cog):
             if config is False:
                 embed.set_author(name="config.db...")
                 await dbmessage.edit(embed=embed)
-                conn_config.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (cname TEXT, cvalue NULL);")
+                conn_config.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (cname TEXT, cvalue NULL);")
                 conn_config.commit()
-                configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+                configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
                 if configcheck != []:
                     embed.set_field_at(index=0, name="config.db", value="PASS", inline=True)
 
@@ -204,9 +204,9 @@ class Utility(commands.Cog):
             if macro is False:
                 embed.set_author(name="macros.db...")
                 await dbmessage.edit(embed=embed)
-                conn_macros.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (name TEXT, alias TEXT, content TEXT);")
+                conn_macros.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (name TEXT, alias TEXT, content TEXT);")
                 conn_macros.commit()
-                macroscheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+                macroscheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
                 if macroscheck != []:
                     embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
 
@@ -218,9 +218,9 @@ class Utility(commands.Cog):
             if mod is False:
                 embed.set_author(name="mod.db...")
                 await dbmessage.edit(embed=embed)
-                conn_mod.execute(f"CREATE TABLE IF NOT EXISTS \"{id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
+                conn_mod.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
                 conn_mod.commit()
-                modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{id}';").fetchall()
+                modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
                 if modcheck != []:
                     embed.set_field_at(index=2, name="mod.db", value="PASS")
 
@@ -247,10 +247,6 @@ class Utility(commands.Cog):
             return await dbmessage.edit(embed=embed)
         else:
             pass
-
-    # @commands.command()
-    # @commands.has_permissions(manage_members=True)
-    # async def addstaffrole(self, ctx, role: discord.Role):
 
 
 async def setup(client):
