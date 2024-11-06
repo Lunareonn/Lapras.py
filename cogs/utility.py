@@ -1,13 +1,14 @@
 import discord
-import sqlite3
+import asyncio
 import platform
+from funcs import actions
 from discord.ext import commands
 
 
 class Utility(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect('databases/config.db')
+        self.client.conn = client.conn
 
     @commands.hybrid_group()
     @commands.is_owner()
@@ -104,13 +105,20 @@ class Utility(commands.Cog):
         embed = discord.Embed(title="Lapras.py", url="https://github.com/Lunareonn", description="Lapras is a multi-function bot created by Lunareonn", color=0x399bfd)
         embed.set_thumbnail(url=client.avatar.url)
         embed.add_field(name="Author", value=f"<@{author.id}>", inline=True)
-        embed.add_field(name="Version", value="1.0.0-dev", inline=True)
+        embed.add_field(name="Version", value="1.1.0", inline=True)
         embed.set_footer(text=f"Discord.py {discord.__version__} | Python {platform.python_version()}")
         await ctx.send(embed=embed)
 
-    # @commands.command()
-    # @commands.has_permissions(manage_members=True)
-    # async def addstaffrole(self, ctx, role: discord.Role):
+    @commands.command()
+    @commands.is_owner()
+    async def manualregister(self, ctx):
+        server_id = ctx.guild.id
+        cur = self.client.conn.cursor()
+        cur.execute("SELECT server_id FROM servers WHERE server_id = ?", (server_id,))
+        if cur.fetchone() is not None:
+            return await ctx.send(f"Server {server_id} already in database")
+        else:
+            actions.register_server(self.client.conn, server_id)
 
 
 async def setup(client):

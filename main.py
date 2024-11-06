@@ -55,12 +55,13 @@ async def setup_hook():
 if __name__ == "__main__":
     TOKEN = os.getenv("TOKEN")
     conn = mariadb.connect(
-            user=os.getenv("db_user"),
-            password=os.getenv("db_pass"),
-            host=os.getenv("db_host"),
-            port=int(os.getenv("db_port")),
-            database=os.getenv("db_name")
-        )
+        user=os.getenv("db_user"),
+        password=os.getenv("db_pass"),
+        host=os.getenv("db_host"),
+        port=int(os.getenv("db_port")),
+        database=os.getenv("db_name")
+    )
+
     actions.setup_database(conn)
     client.conn = conn
     client.run(TOKEN)
