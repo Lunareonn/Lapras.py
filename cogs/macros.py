@@ -5,7 +5,7 @@ from discord.ext import commands
 class Macros(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect('databases/macros.db')
+        self.conn = sqlite3.connect('database/macros.db')
 
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)

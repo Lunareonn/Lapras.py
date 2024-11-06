@@ -7,7 +7,7 @@ from discord.ext import commands
 class Utility(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect('databases/config.db')
+        self.conn = sqlite3.connect('database/config.db')
 
     @commands.hybrid_group()
     @commands.is_owner()
@@ -112,9 +112,9 @@ class Utility(commands.Cog):
     @commands.is_owner()
     async def dbtest(self, ctx):
         server_id = ctx.message.guild.id
-        conn_config = sqlite3.connect("databases/config.db")
-        conn_macros = sqlite3.connect("databases/macros.db")
-        conn_mod = sqlite3.connect("databases/mod.db")
+        conn_config = sqlite3.connect("database/config.db")
+        conn_macros = sqlite3.connect("database/macros.db")
+        conn_mod = sqlite3.connect("database/mod.db")
 
         config_cursor = conn_config.cursor()
         macros_cursor = conn_macros.cursor()

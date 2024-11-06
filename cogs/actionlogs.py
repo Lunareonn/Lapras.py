@@ -7,7 +7,7 @@ import datetime
 class Actionlogs(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect("databases/config.db")
+        self.conn = sqlite3.connect("database/config.db")
 
     @commands.has_permissions(ban_members=True)
     @commands.command()

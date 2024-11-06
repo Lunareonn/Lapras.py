@@ -7,8 +7,8 @@ from discord.ext import commands
 class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect("databases/mod.db")
-        self.cfg_conn = sqlite3.connect("databases/config.db")
+        self.conn = sqlite3.connect("database/mod.db")
+        self.cfg_conn = sqlite3.connect("database/config.db")
 
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
