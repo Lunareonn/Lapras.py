@@ -1,5 +1,4 @@
 import discord
-import asyncio
 import platform
 from funcs import actions
 from discord.ext import commands
@@ -42,12 +41,12 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def setautorole(self, ctx, role: discord.Role):
-        roleid = role.id
-        id = ctx.guild.id
-        cursor = self.conn.cursor()
-        cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("autorole", roleid))
-        self.conn.commit()
-        await ctx.send(f"Autorole set! New members will be assigned <@&{roleid}>")
+        role_id = role.id
+        server_id = ctx.guild.id
+        cur = self.client.conn.cursor()
+        cur.execute("INSERT INTO configs (server_id, autorole_id) VALUES(configs_servers_FK, ?);", (role_id,))
+        self.client.conn.commit()
+        await ctx.send(f"Autorole set! New members will be assigned <@&{role_id}>")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
