@@ -1,35 +1,22 @@
 import discord
-import sqlite3
-from discord.ext import commands
 import datetime
+from discord.ext import commands
+from funcs import actions
 
 
 class Actionlogs(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect("databases/config.db")
+        self.client.conn = client.conn
 
     @commands.has_permissions(ban_members=True)
     @commands.command()
     async def setlogs(self, ctx, channel: discord.TextChannel):
-        id = ctx.message.guild.id
-
-        channelid = str(channel.id)
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute(f"DELETE FROM \"{id}\" WHERE cname = ?;", ("actionlogs_channel", ))
-            cursor.execute(f"INSERT INTO \"{id}\" (cname, cvalue) VALUES(?, ?);", ("actionlogs_channel", channelid))
-        except sqlite3.OperationalError as e:
-            self.client.log.exception(e)
-            return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``config.db``. Please ping Luna.")
-
-        self.conn.commit()
-        await ctx.send(f"Set actionlog channel to <#{channelid}>")
+        actions.set_config_actionlog(self.client.conn, ctx.message.guild.id, channel.id)
+        await ctx.send(f"Set actionlog channel to <#{ctx.message.guild.id}>")
 
     @commands.Cog.listener()
     async def on_message_edit(self, message_before, message_after):
-        id = str(message_before.guild.id)
-
         if message_before.author.bot:
             return
 
@@ -43,21 +30,12 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
         embed.set_footer(text='')
 
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError as e:
-            self.client.log.exception(e)
-            return
-        channelid = cursor.fetchone()[1]
-        channel = await self.client.fetch_channel(channelid)
-
+        channel_id = actions.fetch_actionlog_channel(self.client.conn, message_before.guild.id)
+        channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        id = str(message.guild.id)
-
         if message.author.bot:
             return
 
@@ -71,15 +49,8 @@ class Actionlogs(commands.Cog):
             embed.timestamp = datetime.datetime.now()
             embed.set_footer(text='')
 
-            cursor = self.conn.cursor()
-            try:
-                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-            except sqlite3.OperationalError as e:
-                self.client.log.exception(e)
-                return
-            channelid = cursor.fetchone()[1]
-            channel = await self.client.fetch_channel(channelid)
-
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, message.guild.id)
+            channel = await self.client.fetch_channel(channel_id)
             await channel.send(embed=embed)
         else:
             embed = discord.Embed(title=f"Message deleted in <#{message.channel.id}>", description="", color=0xfb4d70)
@@ -89,21 +60,12 @@ class Actionlogs(commands.Cog):
             embed.timestamp = datetime.datetime.now()
             embed.set_footer(text='')
 
-            cursor = self.conn.cursor()
-            try:
-                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-            except sqlite3.OperationalError as e:
-                self.client.log.exception(e)
-                return
-            channelid = cursor.fetchone()[1]
-            channel = await self.client.fetch_channel(channelid)
-
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, message.guild.id)
+            channel = await self.client.fetch_channel(channel_id)
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        id = member.guild.id
-
         embed = discord.Embed(title="A member has joined", description=f"<@{member.id}> ({member.name}) has joined the server!", color=0x4fff1c)
         embed.set_thumbnail(url=member.display_avatar)
         embed.add_field(name="Account Age", value=f"<t:{int(datetime.datetime.fromisoformat(str(member.created_at)).timestamp())}:R>", inline=False)
@@ -111,21 +73,12 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
         embed.set_footer(text=f"Member Count: {member.guild.member_count}")
 
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError as e:
-            self.client.log.exception(e)
-            return
-        channelid = cursor.fetchone()[1]
-        channel = await self.client.fetch_channel(channelid)
-
+        channel_id = actions.fetch_actionlog_channel(self.client.conn, member.guild.id)
+        channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        id = member.guild.id
-
         try:
             await member.guild.fetch_ban(member)
             return
@@ -135,51 +88,26 @@ class Actionlogs(commands.Cog):
             embed.timestamp = datetime.datetime.now()
             embed.set_footer(text=f"Member Count: {member.guild.member_count} ")
 
-            cursor = self.conn.cursor()
-            try:
-                cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-            except sqlite3.OperationalError as e:
-                self.client.log.exception(e)
-                return
-            channelid = cursor.fetchone()[1]
-            channel = await self.client.fetch_channel(channelid)
-
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, member.guild.id)
+            channel = await self.client.fetch_channel(channel_id)
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_role_create(self, role):
-        id = role.guild.id
-
         embed = discord.Embed(title="A role has been created", description=f"Role name: {role.name}")
         embed.timestamp = datetime.datetime.now()
 
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError as e:
-            self.client.log.exception(e)
-            return
-        channelid = cursor.fetchone()[1]
-        channel = await self.client.fetch_channel(channelid)
-
+        channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+        channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role):
-        id = role.guild.id
-
         embed = discord.Embed(title="A role has been deleted", description=f"Role name: {role.name}")
         embed.timestamp = datetime.datetime.now()
 
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        except sqlite3.OperationalError as e:
-            self.client.log.exception(e)
-            return
-        channelid = cursor.fetchone()[1]
-        channel = await self.client.fetch_channel(channelid)
-
+        channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+        channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 
 

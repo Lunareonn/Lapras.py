@@ -41,12 +41,9 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def setautorole(self, ctx, role: discord.Role):
-        role_id = role.id
         server_id = ctx.guild.id
-        cur = self.client.conn.cursor()
-        cur.execute("INSERT INTO configs (server_id, autorole_id) VALUES(configs_servers_FK, ?);", (role_id,))
-        self.client.conn.commit()
-        await ctx.send(f"Autorole set! New members will be assigned <@&{role_id}>")
+        actions.set_config_autorole(self.client.conn, server_id, role.id)
+        await ctx.send(f"Autorole set! New members will be assigned <@&{role.id}>")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
