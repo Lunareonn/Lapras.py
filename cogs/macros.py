@@ -1,33 +1,23 @@
-# import discord
-import sqlite3
+import mariadb
+from funcs import actions
 from discord.ext import commands
 
 
 class Macros(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect('databases/macros.db')
+        self.client.conn = client.conn
 
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)
     async def macroadd(self, ctx, name: str, *, content: str):
-        id = ctx.message.guild.id
-
-        cursor = self.conn.cursor()
-        cursor.execute(f"SELECT name FROM \"{id}\"")
-        rows = cursor.fetchall()
-        for r in rows:
-            if r == name:
-                return await ctx.send("That macro already exists.")
-
+        server_id = ctx.message.guild.id
         try:
-            cursor.execute(f"INSERT INTO \"{id}\" (name, content) VALUES(?, ?);", (name, content,))
-        except sqlite3.OperationalError as e:
-            self.client.log.exception(e)
-            return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``config.db``. Please ping Luna.")
-
-        self.conn.commit()
-        await ctx.send(f"Added macro {name}")
+            actions.add_macro(self.client.conn, server_id, name, content)
+        except mariadb.IntegrityError:
+            await ctx.send(f"Macro ``{name}`` already exists")
+            return
+        await ctx.send(f"Added macro ``{name}``")
 
     @macroadd.error
     async def marcoadd_error(self, ctx, error):
@@ -37,15 +27,7 @@ class Macros(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)
     async def macroremove(self, ctx, name):
-        id: str = ctx.message.guild.id
-        cursor = self.conn.cursor()
-        try:
-            cursor.execute(f"DELETE FROM \"{id}\" WHERE name = ?", (name,))
-        except sqlite3.OperationalError as e:
-            self.client.log.exception(e)
-            return await ctx.send("``sqlite3.OperationalError`` raised! Something's wrong with ``macros.db``. Please ping Luna.")
-
-        self.conn.commit()
+        actions.delete_macro(self.client.conn, name)
         await ctx.send(f"Removed macro {name}")
 
     @macroremove.error
@@ -55,19 +37,11 @@ class Macros(commands.Cog):
 
     @commands.hybrid_command()
     async def m(self, ctx, name):
-        id = ctx.message.guild.id
-        cursor = self.conn.cursor()
-        cursor.execute(f"SELECT name, content FROM \"{id}\"")
-        macro = cursor.fetchall()
-
-        for m in macro:
-            content = None
-            if m[0] == name:
-                content = str(m[1])
-                pass
-
-        if content is None:
-            return await ctx.send(f"<@{ctx.message.author.id}>: Macro '{name}' is not a valid macro")
+        server_id = ctx.message.guild.id
+        try:
+            content = actions.fetch_macro(self.client.conn, server_id, name)
+        except TypeError:
+            await ctx.send(f"``{name}`` is not a valid macro.")
 
         await ctx.message.delete()
         await ctx.send(f"{content}")
@@ -81,17 +55,16 @@ class Macros(commands.Cog):
 
     @commands.hybrid_command()
     async def macros(self, ctx):
-        id = ctx.message.guild.id
-        cursor = self.conn.cursor()
-        cursor.execute(f"SELECT name FROM \"{id}\"")
-        macro = cursor.fetchall()
+        server_id = ctx.message.guild.id
+        macros = actions.fetch_macro_list(self.client.conn, server_id)
 
-        macros = "**Available macros:**\n"
+        macros_string = "**Available macros:**\n"
+        macros_list = ""
 
-        for m in macro:
-            macros += "- " + m[0] + "\n"
+        for m in macros:
+            macros_list += f"- {m[0]}\n"
 
-        await ctx.send(macros)
+        await ctx.send(macros_string + macros_list)
 
 
 async def setup(client):
