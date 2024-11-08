@@ -13,7 +13,7 @@ class Actionlogs(commands.Cog):
     @commands.command()
     async def setlogs(self, ctx, channel: discord.TextChannel):
         actions.set_config_actionlog(self.client.conn, ctx.message.guild.id, channel.id)
-        await ctx.send(f"Set actionlog channel to <#{ctx.message.guild.id}>")
+        await ctx.send(f"Set actionlog channel to <#{channel.id}>")
 
     @commands.Cog.listener()
     async def on_message_edit(self, message_before, message_after):
@@ -30,7 +30,10 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
         embed.set_footer(text='')
 
-        channel_id = actions.fetch_actionlog_channel(self.client.conn, message_before.guild.id)
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, message_before.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 
@@ -60,7 +63,10 @@ class Actionlogs(commands.Cog):
             embed.timestamp = datetime.datetime.now()
             embed.set_footer(text='')
 
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, message.guild.id)
+            try:
+                channel_id = actions.fetch_actionlog_channel(self.client.conn, message.guild.id)
+            except TypeError:
+                return
             channel = await self.client.fetch_channel(channel_id)
             await channel.send(embed=embed)
 
@@ -88,7 +94,10 @@ class Actionlogs(commands.Cog):
             embed.timestamp = datetime.datetime.now()
             embed.set_footer(text=f"Member Count: {member.guild.member_count} ")
 
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, member.guild.id)
+            try:
+                channel_id = actions.fetch_actionlog_channel(self.client.conn, member.guild.id)
+            except TypeError:
+                return
             channel = await self.client.fetch_channel(channel_id)
             await channel.send(embed=embed)
 
@@ -97,7 +106,10 @@ class Actionlogs(commands.Cog):
         embed = discord.Embed(title="A role has been created", description=f"Role name: {role.name}")
         embed.timestamp = datetime.datetime.now()
 
-        channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 
@@ -106,7 +118,10 @@ class Actionlogs(commands.Cog):
         embed = discord.Embed(title="A role has been deleted", description=f"Role name: {role.name}")
         embed.timestamp = datetime.datetime.now()
 
-        channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 

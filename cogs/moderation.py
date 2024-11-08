@@ -1,20 +1,17 @@
 import discord
-import sqlite3
 from typing import Optional
 from discord.ext import commands
+from funcs import actions
 
 
 class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect("databases/mod.db")
-        self.cfg_conn = sqlite3.connect("databases/config.db")
+        self.client.conn = client.conn
 
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def ban(self, ctx, user: Optional[discord.User], *, reason: str = ""):
-        id = ctx.guild.id
-
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
         else:
@@ -34,9 +31,10 @@ class Moderation(commands.Cog):
         except discord.HTTPException:
             pass
 
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was banned!", description=f"{user} was banned!")
@@ -89,9 +87,10 @@ class Moderation(commands.Cog):
         except discord.HTTPException:
             pass
 
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was banned!", description=f"{user} was banned!")
@@ -124,9 +123,10 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def unban(self, ctx, user: discord.Member):
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was unbanned!", description=f"{user} was unbanned!")
@@ -178,9 +178,10 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             pass
 
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was kicked!", description=f"{user} was kicked!")
@@ -190,38 +191,6 @@ class Moderation(commands.Cog):
 
         await user.kick(reason=reason)
         await ctx.send(f"{user} was kicked! :thumbsup:")
-
-    @commands.has_permissions(moderate_members=True)
-    @commands.command()
-    async def warn(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
-        cursor = self.conn.cursor()
-        id = str(ctx.message.guild.id)
-
-        if user is None and ctx.message.reference is None:
-            return await ctx.send("No user was specified!")
-        else:
-            if ctx.message.reference is not None:
-                message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
-                user = message.author
-
-        cursor.execute(f"SELECT count FROM \"{id}\" WHERE userid = '{user.id}'")
-        warn_count = cursor.fetchall()
-        print(warn_count)
-        # if warn_count is None:
-        #    warn_count = 1
-        #     cursor.execute(f"INSERT INTO \"{id}\" (userid, username, issuer, reason, count, timestamp) VALUES(?, ?, ?, ?, ?, ?);", (user.id, user.name, ctx.author.id, reason, warn_count, "now"))
-        # elif warn_count is not None:
-        #     print("Before:", warn_count)
-        #     warn_count = 1 + warn_count[1]
-        #     print("After:", warn_count)
-        #     await ctx.send(f"This user has {warn_count} warnings")
-        #     cursor.execute(f"INSERT INTO \"{id}\" (userid, username, issuer, reason, count, timestamp) VALUES(?, ?, ?, ?, ?, ?);", (user.id, user.name, ctx.author.id, reason, warn_count, "now"))
-
-        self.conn.commit()
-        # if user == ctx.author:
-        #     return await ctx.send("You can't warn yourself!")
-        # elif user == self.client.user:
-        #     return await ctx.send("I can't warn myself!")
 
 
 async def setup(client):
