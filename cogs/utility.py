@@ -47,11 +47,11 @@ class Utility(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        id = member.guild.id
-        cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{id}\" WHERE cname = 'autorole'")
-        roleid = cursor.fetchone()[1]
-        role = member.guild.get_role(roleid)
+        try:
+            role_id = actions.fetch_autorole(self.client.conn, member.guild.id)
+        except TypeError:
+            return
+        role = member.guild.get_role(role_id)
         await member.add_roles(role)
 
     @commands.command()
