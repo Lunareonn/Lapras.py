@@ -27,7 +27,7 @@ class TF2Comp(commands.Cog):
 
     @commands.check(check_if_leader)
     @commands.command()
-    async def availabletest(self, ctx):
+    async def available(self, ctx):
         await ctx.message.delete()
         global embed
 
