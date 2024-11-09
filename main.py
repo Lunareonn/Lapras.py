@@ -1,12 +1,12 @@
 import discord
 import os
-import sqlite3
+import mariadb
 import logging
 import logging.handlers
 import config
 from dotenv import load_dotenv
 from discord.ext import commands
-
+from funcs import actions
 load_dotenv()
 intents = discord.Intents.all()
 client = commands.AutoShardedBot(shard_count=1,
@@ -32,24 +32,13 @@ client.log = log
 
 @client.event
 async def on_ready():
-    print(f"Ready. Logged in as {client.user}")
+    log.info(f"Ready. Logged in as {client.user}")
 
 
 @client.event
 async def on_guild_join(guild):
-    server_id = str(guild.id)
-    conn = sqlite3.connect("database/config.db")
-    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (cname TEXT, cvalue NULL);")
-    conn.commit()
-
-    conn = sqlite3.connect("database/macros.db")
-    conn.exeucte(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (name TEXT, alias TEXT, content TEXT)")
-    conn.commit()
-
-    conn = sqlite3.connect("database/mod.db")
-    conn.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
-    conn.commit()
-    print(f"bot was added to server {guild}")
+    actions.register_server(client.conn, guild.id)
+    log.info(f"Bot was added to server {guild}")
 
 
 @client.event
@@ -57,11 +46,22 @@ async def setup_hook():
     for cog in config.loaded_cogs:
         try:
             await client.load_extension(f"{cog}")
-            print(f"Loaded cog: {cog}")
             log.info(f"Loaded cog: {cog}")
         except Exception as e:
             print(f"Failed to load cog {cog}:", e)
             log.exception(f"Failed to load cog {cog}:", e)
 
-TOKEN = os.getenv("TOKEN")
-client.run(TOKEN, log_handler=None)
+
+if __name__ == "__main__":
+    TOKEN = os.getenv("TOKEN")
+    conn = mariadb.connect(
+        user=os.getenv("db_user"),
+        password=os.getenv("db_pass"),
+        host=os.getenv("db_host"),
+        port=int(os.getenv("db_port")),
+        database=os.getenv("db_name")
+    )
+
+    actions.setup_database(conn)
+    client.conn = conn
+    client.run(TOKEN, log_handler=None)

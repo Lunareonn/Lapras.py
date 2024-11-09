@@ -1,20 +1,17 @@
 import discord
-import sqlite3
 from typing import Optional
 from discord.ext import commands
+from funcs import actions
 
 
 class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect("database/mod.db")
-        self.cfg_conn = sqlite3.connect("database/config.db")
+        self.client.conn = client.conn
 
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def ban(self, ctx, user: Optional[discord.User], *, reason: str = ""):
-        server_id = ctx.guild.id
-
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
         else:
@@ -34,9 +31,10 @@ class Moderation(commands.Cog):
         except discord.HTTPException:
             pass
 
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was banned!", description=f"{user} was banned!")
@@ -90,9 +88,10 @@ class Moderation(commands.Cog):
         except discord.HTTPException:
             pass
 
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was banned!", description=f"{user} was banned!")
@@ -125,10 +124,10 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def unban(self, ctx, user: discord.Member):
-        server_id = ctx.guild.id
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was unbanned!", description=f"{user} was unbanned!")
@@ -181,9 +180,10 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             pass
 
-        cursor = self.cfg_conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'actionlogs_channel'")
-        channel_id = cursor.fetchone()[1]
+        try:
+            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+        except TypeError:
+            return
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was kicked!", description=f"{user} was kicked!")

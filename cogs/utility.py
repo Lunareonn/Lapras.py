@@ -1,13 +1,13 @@
 import discord
-import sqlite3
 import platform
+from funcs import actions
 from discord.ext import commands
 
 
 class Utility(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.conn = sqlite3.connect('database/config.db')
+        self.client.conn = client.conn
 
     @commands.hybrid_group()
     @commands.is_owner()
@@ -41,20 +41,17 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def setautorole(self, ctx, role: discord.Role):
-        roleid = role.id
         server_id = ctx.guild.id
-        cursor = self.conn.cursor()
-        cursor.execute(f"INSERT INTO \"{server_id}\" (cname, cvalue) VALUES(?, ?);", ("autorole", roleid))
-        self.conn.commit()
-        await ctx.send(f"Autorole set! New members will be assigned <@&{roleid}>")
+        actions.set_config_autorole(self.client.conn, server_id, role.id)
+        await ctx.send(f"Autorole set! New members will be assigned <@&{role.id}>")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        server_id = member.guild.id
-        cursor = self.conn.cursor()
-        cursor.execute(f"SELECT cname, cvalue FROM \"{server_id}\" WHERE cname = 'autorole'")
-        roleid = cursor.fetchone()[1]
-        role = member.guild.get_role(roleid)
+        try:
+            role_id = actions.fetch_autorole(self.client.conn, member.guild.id)
+        except TypeError:
+            return
+        role = member.guild.get_role(role_id)
         await member.add_roles(role)
 
     @commands.command()
@@ -104,149 +101,20 @@ class Utility(commands.Cog):
         embed = discord.Embed(title="Lapras.py", url="https://github.com/Lunareonn", description="Lapras is a multi-function bot created by Lunareonn", color=0x399bfd)
         embed.set_thumbnail(url=client.avatar.url)
         embed.add_field(name="Author", value=f"<@{author.id}>", inline=True)
-        embed.add_field(name="Version", value="1.0.0-dev", inline=True)
+        embed.add_field(name="Version", value="1.1.0", inline=True)
         embed.set_footer(text=f"Discord.py {discord.__version__} | Python {platform.python_version()}")
         await ctx.send(embed=embed)
 
     @commands.command()
     @commands.is_owner()
-    async def dbtest(self, ctx):
-        server_id = ctx.message.guild.id
-        conn_config = sqlite3.connect("database/config.db")
-        conn_macros = sqlite3.connect("database/macros.db")
-        conn_mod = sqlite3.connect("database/mod.db")
-
-        config_cursor = conn_config.cursor()
-        macros_cursor = conn_macros.cursor()
-        mod_cursor = conn_mod.cursor()
-
-        embed = discord.Embed(title="Checking database...",
-                              colour=0xffffff)
-
-        embed.set_author(name="config.db...")
-        embed.add_field(name="config.db",
-                        value="?",
-                        inline=True)
-        embed.add_field(name="macros.db",
-                        value="?",
-                        inline=True)
-        embed.add_field(name="mod.db",
-                        value="?",
-                        inline=True)
-
-        dbmessage = await ctx.send(embed=embed)
-        configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
-        if configcheck == []:
-            config = False
-            embed.set_field_at(index=0, name="config.db", value="FAIL", inline=True)
-            await dbmessage.edit(embed=embed)
+    async def manualregister(self, ctx):
+        server_id = ctx.guild.id
+        cur = self.client.conn.cursor()
+        cur.execute("SELECT server_id FROM servers WHERE server_id = ?", (server_id,))
+        if cur.fetchone() is not None:
+            return await ctx.send(f"Server {server_id} already in database")
         else:
-            config = True
-            embed.set_field_at(index=0, name="config.db", value="PASS", inline=True)
-            await dbmessage.edit(embed=embed)
-
-        embed.set_author(name="macros.db...")
-        await dbmessage.edit(embed=embed)
-        macroscheck = macros_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
-        if macroscheck == []:
-            macro = False
-            embed.set_field_at(index=1, name="macros.db", value="FAIL", inline=True)
-            await dbmessage.edit(embed=embed)
-        else:
-            macro = True
-            embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
-            await dbmessage.edit(embed=embed)
-
-        embed.set_author(name="mod.db...")
-        modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
-        if modcheck == []:
-            mod = False
-            embed.set_field_at(index=2, name="mod.db", value="FAIL", inline=True)
-            await dbmessage.edit(embed=embed)
-        else:
-            mod = True
-            embed.set_field_at(index=2, name="mod.db", value="PASS", inline=True)
-
-        if config is False or macro is False or mod is False:
-            embed = discord.Embed(title="Fixing databases",
-                                  description="...",
-                                  colour=0xf40006)
-            if config is True:
-                embed.add_field(name="config.db", value="PASS", inline=True)
-            else:
-                embed.add_field(name="config.db", value="?", inline=True)
-
-            if macro is True:
-                embed.add_field(name="macros.db", value="PASS", inline=True)
-            else:
-                embed.add_field(name="macros.db", value="?", inline=True)
-
-            if mod is True:
-                embed.add_field(name="mod.db", value="PASS", inline=True)
-            else:
-                embed.add_field(name="mod.db", value="?", inline=True)
-
-            await dbmessage.edit(embed=embed)
-            if config is False:
-                embed.set_author(name="config.db...")
-                await dbmessage.edit(embed=embed)
-                conn_config.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (cname TEXT, cvalue NULL);")
-                conn_config.commit()
-                configcheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
-                if configcheck != []:
-                    embed.set_field_at(index=0, name="config.db", value="PASS", inline=True)
-
-                await dbmessage.edit(embed=embed)
-            else:
-                embed.set_field_at(index=0, name="config.db", value="PASS", inline=True)
-                await dbmessage.edit(embed=embed)
-
-            if macro is False:
-                embed.set_author(name="macros.db...")
-                await dbmessage.edit(embed=embed)
-                conn_macros.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (name TEXT, alias TEXT, content TEXT);")
-                conn_macros.commit()
-                macroscheck = config_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
-                if macroscheck != []:
-                    embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
-
-                await dbmessage.edit(embed=embed)
-            else:
-                embed.set_field_at(index=1, name="macros.db", value="PASS", inline=True)
-                await dbmessage.edit(embed=embed)
-
-            if mod is False:
-                embed.set_author(name="mod.db...")
-                await dbmessage.edit(embed=embed)
-                conn_mod.execute(f"CREATE TABLE IF NOT EXISTS \"{server_id}\" (userid INTEGER, username TEXT, issuer INTEGER, reason TEXT, count INTEGER, timestamp BLOB)")
-                conn_mod.commit()
-                modcheck = mod_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{server_id}';").fetchall()
-                if modcheck != []:
-                    embed.set_field_at(index=2, name="mod.db", value="PASS")
-
-                await dbmessage.edit(embed=embed)
-            else:
-                embed.set_field_at(index=1, name="mod.db", value="PASS", inline=True)
-                await dbmessage.edit(embed=embed)
-
-            embed = discord.Embed(title="Done!",
-                                  description="Databases fixed.",
-                                  colour=0x0ff103)
-            embed.add_field(name="config.db", value="PASS", inline=True)
-            embed.add_field(name="macros.db", value="PASS", inline=True)
-            embed.add_field(name="mod.db", value="PASS", inline=True)
-            return await dbmessage.edit(embed=embed)
-
-        if config is True and macro is True:
-            embed = discord.Embed(title="Done!",
-                                  description="Everything seems fine.",
-                                  colour=0x0ff103)
-            embed.add_field(name="config.db", value="PASS", inline=True)
-            embed.add_field(name="macros.db", value="PASS", inline=True)
-            embed.add_field(name="mod.db", value="PASS", inline=True)
-            return await dbmessage.edit(embed=embed)
-        else:
-            pass
+            actions.register_server(self.client.conn, server_id)
 
 
 async def setup(client):

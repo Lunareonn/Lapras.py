@@ -7,3 +7,4 @@ grpcio-tools
 Pillow
 Jinja2
 requests
+mariadb
