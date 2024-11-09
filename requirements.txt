@@ -1,10 +1,4 @@
 discord.py
 python-dotenv
 text-to-owo
-selenium
-grpcio
-grpcio-tools
-Pillow
-Jinja2
-requests
 mariadb
