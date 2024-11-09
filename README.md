@@ -18,7 +18,6 @@
 ## Notes
 
 - As of 6/11/2024, the bot is **NOT** made for use across multiple servers.
-- The current database system is very bad, I'm aware. I'm working on a database rewrite over on the [db-rewrite](https://github.com/Lunareonn/Lapras.py/tree/db-rewrite) branch.
 
 ## Credits
 
