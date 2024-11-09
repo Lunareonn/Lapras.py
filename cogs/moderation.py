@@ -68,6 +68,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def bandel(self, ctx, messagedel: int, user: Optional[discord.Member], *, reason: str = "Not specified"):
+        server_id = ctx.guild.id
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
         else:
@@ -157,6 +158,7 @@ class Moderation(commands.Cog):
     @commands.has_permissions(kick_members=True, moderate_members=True)
     @commands.command()
     async def kick(self, ctx, user: Optional[discord.Member], *, reason: str = ""):
+        server_id = ctx.guild.id
         if user == ctx.author:
             return await ctx.send("You can't kick yourself!")
         elif user == self.client.user:

@@ -64,4 +64,4 @@ if __name__ == "__main__":
 
     actions.setup_database(conn)
     client.conn = conn
-    client.run(TOKEN)
+    client.run(TOKEN, log_handler=None)
