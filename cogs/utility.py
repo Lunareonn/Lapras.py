@@ -57,9 +57,9 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def who(self, ctx, member: discord.Member):
-        userid = member.id
+        user_id = member.id
         username = member.name
-        displayname = member.global_name
+        display_name = member.global_name
         user_avatar = member.avatar
         user_perms = member.guild_permissions
         created_at = member.created_at.strftime("%d/%m/%Y, %H:%M:%S")
@@ -80,15 +80,15 @@ class Utility(commands.Cog):
 
         if user_perms.ban_members or user_perms.kick_members or user_perms.manage_members:
             staff = True
-        if ctx.guild.owner_id == userid:
+        if ctx.guild.owner_id == user_id:
             owner = True
 
-        embed = discord.Embed(description=f"<@{userid}> ({username})", color=0x2f96fd)
+        embed = discord.Embed(description=f"<@{user_id}> ({username})", color=0x2f96fd)
         embed.set_thumbnail(url=user_avatar.url)
         embed.add_field(name="Joined Server", value=joined_at, inline=True)
         embed.add_field(name="Creation Date", value=created_at, inline=True)
         embed.add_field(name="Username", value=username, inline=False)
-        embed.add_field(name="Display name", value=displayname, inline=False)
+        embed.add_field(name="Display name", value=display_name, inline=False)
         embed.add_field(name="Staff?", value=staff, inline=False)
         embed.add_field(name="Owner?", value=owner, inline=False)
         embed.add_field(name="Custom status", value=custom_status, inline=False)
