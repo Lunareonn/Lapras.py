@@ -1,6 +1,7 @@
 import discord
 import re
 import platform
+import config
 from funcs import actions
 from discord.ext import commands
 
@@ -96,13 +97,11 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def about(self, ctx):
-        client = ctx.bot.user
         author = await self.client.fetch_user(237605319159709696)
 
-        embed = discord.Embed(title="Lapras.py", url="https://github.com/Lunareonn", description="Lapras is a multi-function bot created by Lunareonn", color=0x399bfd)
-        embed.set_thumbnail(url=client.avatar.url)
+        embed = discord.Embed(title="Lapras.py", url="https://github.com/Lunareonn/Lapras.py", description="Lapras is a multifunctional bot created by Lunareonn", color=0x399bfd)
         embed.add_field(name="Author", value=f"<@{author.id}>", inline=True)
-        embed.add_field(name="Version", value="1.1.0", inline=True)
+        embed.add_field(name="Version", value=config.bot_version, inline=True)
         embed.set_footer(text=f"Discord.py {discord.__version__} | Python {platform.python_version()}")
         await ctx.send(embed=embed)
 

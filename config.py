@@ -27,3 +27,5 @@ loaded_cogs = [
     "cogs.tf2comp",
     "cogs.utility",
 ]
+
+bot_version = "1.1.4"
