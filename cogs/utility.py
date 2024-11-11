@@ -1,4 +1,5 @@
 import discord
+import re
 import platform
 from funcs import actions
 from discord.ext import commands
@@ -115,6 +116,25 @@ class Utility(commands.Cog):
             return await ctx.send(f"Server {server_id} already in database")
         else:
             actions.register_server(self.client.conn, server_id)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        link_regex = r"https?://(?:(?:ptb|canary)\.)?discord(app)?\.com\/channels\/(\d+)\/(\d+)\/(\d+)"
+        link_match = re.match(link_regex, message.content)
+        if link_match:
+            message_id = link_match.groups()
+            fetched_message = await message.channel.fetch_message(message_id[3])
+        else:
+            return
+
+        embed = discord.Embed(description=f"{fetched_message.content}", colour=0x05c7ef)
+        embed.set_author(name=f"{fetched_message.author}", icon_url=f"{fetched_message.author.display_avatar.url}")
+        embed.add_field(name="Jump to message",
+                        value=f"[Click here]({fetched_message.jump_url})",
+                        inline=False)
+
+        await message.delete()
+        await message.channel.send(embed=embed)
 
 
 async def setup(client):
