@@ -140,6 +140,7 @@ class Utility(commands.Cog):
         await ctx.send("Incorrect syntax! Try `cog enable <cog>` or `cog disable <cog>`")
 
     @cog.command()
+    @commands.has_permissions(administrator=True)
     async def enable(self, ctx, cog: str):
         actions.enable_cog(self.client.conn, ctx.guild.id, cog)
         await ctx.send(f"Successfully enabled {cog}!")
