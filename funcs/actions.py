@@ -31,6 +31,13 @@ def setup_database(conn: mariadb.Connection):
                 count INTEGER NOT NULL,
                 CONSTRAINT moderation_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS cogs (
+                id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                server_id INTEGER NOT NULL,
+                enabled_cog TEXT UNIQUE,
+                disabled_cog TEXT UNIQUE,
+                CONSTRAINT cog_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
+                );""")
 
 
 def register_server(conn: mariadb.Connection, server_id: int):
@@ -104,3 +111,21 @@ def fetch_macro_list(conn: mariadb.Connection, server_id: int):
     cur.execute("SELECT name FROM macros WHERE server_id = ?", (fetched_server_id,))
     macros = cur.fetchall()
     return macros
+
+
+def enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    print(fetched_server_id)
+    cur.execute("INSERT INTO cogs (server_id, enabled_cog) VALUES (?,?)", (fetched_server_id, cog))
+    # cur.execute("UPDATE cogs SET enabled_cog = ? WHERE server_id = ?;", (cog, fetched_server_id))
+    conn.commit()
+
+
+def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO cogs (server_id, disabled_cog) VALUES (?,?)", (fetched_server_id, cog))
+    conn.commit()
