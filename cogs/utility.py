@@ -137,15 +137,18 @@ class Utility(commands.Cog):
 
     @commands.hybrid_group()
     async def cog(self, ctx):
-        await ctx.send("wrong syntax bozo")
+        await ctx.send("Incorrect syntax! Try `cog enable <cog>` or `cog disable <cog>`")
 
     @cog.command()
     async def enable(self, ctx, cog: str):
         actions.enable_cog(self.client.conn, ctx.guild.id, cog)
+        await ctx.send(f"Successfully enabled {cog}!")
 
     @cog.command()
+    @commands.has_permissions(administrator=True)
     async def disable(self, ctx, cog: str):
         actions.disable_cog(self.client.conn, ctx.guild.id, cog)
+        await ctx.send(f"Successfully disabled {cog}!")
 
 
 async def setup(client):
