@@ -6,3 +6,5 @@ __pycache__/
 .flake8
 *.db
 *.log
+docker-compose.yml
+compose.yml
