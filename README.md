@@ -12,6 +12,7 @@
 - Actionlogs/Modlogs
 - Automatic role assignment for new members
 - Competitive Team Fortress 2 roster availability check
+- Turn message links into embed quotes
 
 **This bot is still very much a Work In Progress. Further functionality will be added as I work on the project.**
 
