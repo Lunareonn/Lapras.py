@@ -9,6 +9,12 @@ class Actionlogs(commands.Cog):
         self.client = client
         self.client.conn = client.conn
 
+    def cog_check(self, ctx):
+        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "actionlogs")
+        if selected_cog:
+            return False
+        return True
+
     @commands.has_permissions(ban_members=True)
     @commands.command()
     async def setlogs(self, ctx, channel: discord.TextChannel):

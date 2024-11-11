@@ -9,6 +9,12 @@ class Moderation(commands.Cog):
         self.client = client
         self.client.conn = client.conn
 
+    def cog_check(self, ctx):
+        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "moderation")
+        if selected_cog:
+            return False
+        return True
+
     @commands.has_permissions(ban_members=True, moderate_members=True)
     @commands.command()
     async def ban(self, ctx, user: Optional[discord.User], *, reason: str = ""):

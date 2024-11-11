@@ -135,6 +135,36 @@ class Utility(commands.Cog):
         await message.delete()
         await message.channel.send(embed=embed)
 
+    @commands.hybrid_group()
+    async def cog(self, ctx):
+        await ctx.send("Incorrect syntax! Try `cog enable <cog>` or `cog disable <cog>`")
+
+    @cog.command()
+    @commands.has_permissions(administrator=True)
+    async def enable(self, ctx, cog: str):
+        actions.enable_cog(self.client.conn, ctx.guild.id, cog)
+        await ctx.send(f"Successfully enabled {cog}!")
+
+    @cog.command()
+    @commands.has_permissions(administrator=True)
+    async def disable(self, ctx, cog: str):
+        actions.disable_cog(self.client.conn, ctx.guild.id, cog)
+        await ctx.send(f"Successfully disabled {cog}!")
+
+    @cog.command()
+    async def list(self, ctx):
+        disabled_cogs = actions.list_disabled_cogs(self.client.conn, ctx.guild.id)
+
+        cogs_string = f"**Disabled cogs on {ctx.guild.name}:**\n"
+        cogs_list = ""
+
+        for c in disabled_cogs:
+            if None in c:
+                continue
+            cogs_list += f"- {c[0]}\n"
+
+        await ctx.send(cogs_string + cogs_list)
+
 
 async def setup(client):
     await client.add_cog(Utility(client))

@@ -8,6 +8,12 @@ class Macros(commands.Cog):
         self.client = client
         self.client.conn = client.conn
 
+    def cog_check(self, ctx):
+        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "macros")
+        if selected_cog:
+            return False
+        return True
+
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)
     async def macroadd(self, ctx, name: str, *, content: str):
