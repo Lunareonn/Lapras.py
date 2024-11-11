@@ -117,15 +117,48 @@ def enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
     cur = conn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
-    print(fetched_server_id)
-    cur.execute("INSERT INTO cogs (server_id, enabled_cog) VALUES (?,?)", (fetched_server_id, cog))
-    # cur.execute("UPDATE cogs SET enabled_cog = ? WHERE server_id = ?;", (cog, fetched_server_id))
-    conn.commit()
+    selected_cog = check_disable_cog(conn, server_id, cog)
+    if selected_cog:
+        cur.execute("UPDATE cogs SET disabled_cog = NULL, enabled_cog = ? WHERE disabled_cog = ? AND server_id = ?", (cog, selected_cog, fetched_server_id))
+        return conn.commit()
+    else:
+        cur.execute("INSERT INTO cogs (server_id, enabled_cog) VALUES (?,?)", (fetched_server_id, cog))
+        conn.commit()
 
 
 def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
     cur = conn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
-    cur.execute("INSERT INTO cogs (server_id, disabled_cog) VALUES (?,?)", (fetched_server_id, cog))
-    conn.commit()
+    selected_cog = check_enable_cog(conn, server_id, cog)
+    if selected_cog:
+        cur.execute("UPDATE cogs SET enabled_cog = NULL, disabled_cog = ? WHERE enabled_cog = ? AND server_id = ?", (cog, selected_cog, fetched_server_id))
+        return conn.commit()
+    else:
+        cur.execute("INSERT INTO cogs (server_id, disabled_cog) VALUES (?,?)", (fetched_server_id, cog))
+        conn.commit()
+
+
+def check_enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("SELECT enabled_cog FROM cogs WHERE enabled_cog = ? AND server_id = ?", (cog, fetched_server_id))
+    try:
+        selected_cog = cur.fetchone()[0]
+        return selected_cog
+    except TypeError:
+        return False
+    
+
+
+def check_disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("SELECT disabled_cog FROM cogs WHERE disabled_cog = ? AND server_id = ?", (cog, fetched_server_id))
+    try:
+        selected_cog = cur.fetchone()[0]
+        return selected_cog
+    except TypeError:
+        return False
