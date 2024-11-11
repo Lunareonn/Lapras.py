@@ -28,4 +28,4 @@ loaded_cogs = [
     "cogs.utility",
 ]
 
-bot_version = "1.1.4"
+bot_version = "1.1.5"
