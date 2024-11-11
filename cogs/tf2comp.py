@@ -2,6 +2,7 @@ import discord
 import datetime
 import config
 from enum import Enum
+from funcs import actions
 from funcs.checks import check_if_leader
 from discord.ext import commands
 
@@ -24,6 +25,12 @@ class TF2Comp(commands.Cog):
         self.available_players = []
         self.unavailable_players = []
         self.vote_message_id = None
+
+    def cog_check(self, ctx):
+        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "tf2comp")
+        if selected_cog:
+            return False
+        return True
 
     @commands.check(check_if_leader)
     @commands.command()
