@@ -21,8 +21,7 @@ class Memes(commands.Cog):
             return
         else:
             if ctx.message.reference is not None:
-                messageid = ctx.message.reference.message_id
-                message = await ctx.fetch_message(messageid)
+                message = await ctx.fetch_message(ctx.message.reference.message_id)
                 await ctx.message.delete()
                 await ctx.send(owo.owo(message.clean_content), reference=ctx.message.reference, mention_author=False)
 
