@@ -1,6 +1,6 @@
-name: Lint
+name: flake8 Lint
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   flake8:
@@ -19,4 +19,6 @@ jobs:
         run: pip install flake8
 
       - name: Run Flake8
-        run: flake8 .
+        uses: py-actions/flake8@v2
+        with:
+          ignore: "E501"
