@@ -135,6 +135,18 @@ class Utility(commands.Cog):
         await message.delete()
         await message.channel.send(embed=embed)
 
+    @commands.hybrid_group()
+    async def cog(self, ctx):
+        await ctx.send("wrong syntax bozo")
+
+    @cog.command()
+    async def enable(self, ctx, cog: str):
+        actions.enable_cog(self.client.conn, ctx.guild.id, cog)
+
+    @cog.command()
+    async def disable(self, ctx, cog: str):
+        actions.disable_cog(self.client.conn, ctx.guild.id, cog)
+
 
 async def setup(client):
     await client.add_cog(Utility(client))
