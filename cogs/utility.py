@@ -151,6 +151,20 @@ class Utility(commands.Cog):
         actions.disable_cog(self.client.conn, ctx.guild.id, cog)
         await ctx.send(f"Successfully disabled {cog}!")
 
+    @cog.command()
+    async def list(self, ctx):
+        disabled_cogs = actions.list_disabled_cogs(self.client.conn, ctx.guild.id)
+
+        cogs_string = f"**Disabled cogs on {ctx.guild.name}:**\n"
+        cogs_list = ""
+
+        for c in disabled_cogs:
+            if None in c:
+                continue
+            cogs_list += f"- {c[0]}\n"
+
+        await ctx.send(cogs_string + cogs_list)
+
 
 async def setup(client):
     await client.add_cog(Utility(client))

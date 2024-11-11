@@ -154,3 +154,12 @@ def check_if_cog_disabled(conn: mariadb.Connection, server_id: int, cog: str):
         return selected_cog
     except TypeError:
         return False
+
+
+def list_disabled_cogs(conn: mariadb.Connection, server_id: int):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("SELECT disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))
+    disabled_cogs = cur.fetchall()
+    return disabled_cogs
