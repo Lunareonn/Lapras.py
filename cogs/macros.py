@@ -17,9 +17,8 @@ class Macros(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)
     async def macroadd(self, ctx, name: str, *, content: str):
-        server_id = ctx.message.guild.id
         try:
-            actions.add_macro(self.client.conn, server_id, name, content)
+            actions.add_macro(self.client.conn, ctx.message.guild.id, name, content)
         except mariadb.IntegrityError:
             await ctx.send(f"Macro ``{name}`` already exists")
             return
@@ -43,9 +42,8 @@ class Macros(commands.Cog):
 
     @commands.hybrid_command()
     async def m(self, ctx, name):
-        server_id = ctx.message.guild.id
         try:
-            content = actions.fetch_macro(self.client.conn, server_id, name)
+            content = actions.fetch_macro(self.client.conn, ctx.message.guild.id, name)
         except TypeError:
             await ctx.send(f"``{name}`` is not a valid macro.")
 
@@ -61,8 +59,7 @@ class Macros(commands.Cog):
 
     @commands.hybrid_command()
     async def macros(self, ctx):
-        server_id = ctx.message.guild.id
-        macros = actions.fetch_macro_list(self.client.conn, server_id)
+        macros = actions.fetch_macro_list(self.client.conn, ctx.message.guild.id)
 
         macros_string = "**Available macros:**\n"
         macros_list = ""

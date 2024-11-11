@@ -43,8 +43,7 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def setautorole(self, ctx, role: discord.Role):
-        server_id = ctx.guild.id
-        actions.set_config_autorole(self.client.conn, server_id, role.id)
+        actions.set_config_autorole(self.client.conn, ctx.guild.id, role.id)
         await ctx.send(f"Autorole set! New members will be assigned <@&{role.id}>")
 
     @commands.Cog.listener()
@@ -108,13 +107,12 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def manualregister(self, ctx):
-        server_id = ctx.guild.id
         cur = self.client.conn.cursor()
-        cur.execute("SELECT server_id FROM servers WHERE server_id = ?", (server_id,))
+        cur.execute("SELECT server_id FROM servers WHERE server_id = ?", (ctx.guild.id,))
         if cur.fetchone() is not None:
-            return await ctx.send(f"Server {server_id} already in database")
+            return await ctx.send(f"Server {ctx.guild.id} already in database")
         else:
-            actions.register_server(self.client.conn, server_id)
+            actions.register_server(self.client.conn, ctx.guild.id)
 
     @commands.Cog.listener()
     async def on_message(self, message):
