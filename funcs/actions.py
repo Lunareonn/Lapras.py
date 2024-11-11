@@ -149,7 +149,6 @@ def check_enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
         return selected_cog
     except TypeError:
         return False
-    
 
 
 def check_disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
