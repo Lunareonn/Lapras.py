@@ -163,7 +163,7 @@ class Utility(commands.Cog):
         cogs_list = ""
 
         for c in disabled_cogs:
-            if None in c:
+            if 0 in c:
                 continue
             cogs_list += f"- {c[0]}\n"
 

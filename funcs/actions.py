@@ -36,7 +36,7 @@ def setup_database(conn: mariadb.Connection):
                 id INTEGER PRIMARY KEY AUTO_INCREMENT,
                 server_id INTEGER NOT NULL,
                 cog TEXT,
-                disabled_cog TEXT UNIQUE,
+                disabled_cog BOOL,
                 CONSTRAINT cog_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
 
@@ -125,9 +125,10 @@ def enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
     fetched_server_id = cur.fetchone()[0]
     cog_disabled = check_if_cog_disabled(conn, server_id, cog)
     if cog_disabled is False:
-        return False
+        cur.execute("INSERT INTO cogs (server_id, cog, disabled_cog) VALUES (?,?,?)", (fetched_server_id, cog, False))
+        conn.commit()
     else:
-        cur.execute("UPDATE cogs SET disabled_cog = NULL WHERE cog = ? AND server_id = ?", (cog, fetched_server_id))
+        cur.execute("UPDATE cogs SET disabled_cog = ? WHERE cog = ? AND server_id = ?", (False, cog, fetched_server_id))
         conn.commit()
 
 
@@ -148,10 +149,10 @@ def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
         try:
             fetched_cog = cur.fetchone()[0]
             if cog in fetched_cog:
-                cur.execute("UPDATE cogs SET disabled_cog = ? WHERE cog = ? AND server_id = ?", (cog, cog, fetched_server_id))
+                cur.execute("UPDATE cogs SET disabled_cog = ? WHERE cog = ? AND server_id = ?", (True, cog, fetched_server_id))
                 return conn.commit()
         except TypeError:
-            cur.execute("INSERT INTO cogs (server_id, cog, disabled_cog) VALUES (?,?,?)", (fetched_server_id, cog, cog))
+            cur.execute("INSERT INTO cogs (server_id, cog, disabled_cog) VALUES (?,?,?)", (fetched_server_id, cog, True))
             return conn.commit()
 
 
@@ -171,6 +172,6 @@ def list_disabled_cogs(conn: mariadb.Connection, server_id: int):
     cur = conn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
-    cur.execute("SELECT disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))
+    cur.execute("SELECT cog, disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))
     disabled_cogs = cur.fetchall()
     return disabled_cogs
