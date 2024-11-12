@@ -19,13 +19,13 @@ leader_roles = [
 ]
 
 loaded_cogs = [
-    "cogs.actionlogs",
-    "cogs.errorhandler",
-    "cogs.macros",
-    "cogs.memes",
-    "cogs.moderation",
-    "cogs.tf2comp",
-    "cogs.utility",
+    "actionlogs",
+    "errorhandler",
+    "macros",
+    "memes",
+    "moderation",
+    "tf2comp",
+    "utility",
 ]
 
 bot_version = "1.1.5"

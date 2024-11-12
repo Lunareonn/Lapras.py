@@ -45,7 +45,7 @@ async def on_guild_join(guild):
 async def setup_hook():
     for cog in config.loaded_cogs:
         try:
-            await client.load_extension(f"{cog}")
+            await client.load_extension(f"cogs.{cog}")
             log.info(f"Loaded cog: {cog}")
         except Exception as e:
             print(f"Failed to load cog {cog}:", e)
