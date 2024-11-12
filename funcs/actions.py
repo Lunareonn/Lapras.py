@@ -1,4 +1,5 @@
 import mariadb
+import config
 
 
 def setup_database(conn: mariadb.Connection):
@@ -114,6 +115,11 @@ def fetch_macro_list(conn: mariadb.Connection, server_id: int):
 
 
 def enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
+    if cog in config.loaded_cogs:
+        pass
+    else:
+        return False
+
     cur = conn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
@@ -126,6 +132,11 @@ def enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
 
 
 def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
+    if cog in config.loaded_cogs:
+        pass
+    else:
+        return False
+
     cur = conn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]

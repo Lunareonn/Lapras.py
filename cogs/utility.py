@@ -140,13 +140,19 @@ class Utility(commands.Cog):
     @cog.command()
     @commands.has_permissions(administrator=True)
     async def enable(self, ctx, cog: str):
-        actions.enable_cog(self.client.conn, ctx.guild.id, cog)
+        valid_cog = actions.enable_cog(self.client.conn, ctx.guild.id, cog)
+        if valid_cog is False:
+            await ctx.send(f"{cog} is not a valid cog.")
+            return
         await ctx.send(f"Successfully enabled {cog}!")
 
     @cog.command()
     @commands.has_permissions(administrator=True)
     async def disable(self, ctx, cog: str):
-        actions.disable_cog(self.client.conn, ctx.guild.id, cog)
+        valid_cog = actions.disable_cog(self.client.conn, ctx.guild.id, cog)
+        if valid_cog is False:
+            await ctx.send(f"{cog} is not a valid cog.")
+            return
         await ctx.send(f"Successfully disabled {cog}!")
 
     @cog.command()
