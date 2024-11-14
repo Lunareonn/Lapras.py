@@ -44,7 +44,6 @@ class Moderation(commands.Cog):
         channel = await self.client.fetch_channel(channel_id)
 
         modlog_embed = discord.Embed(title="User was banned!", description=f"{user} was banned!")
-        print(user.avatar.url)
         modlog_embed.set_author(name=f"{user.display_name} ({user})", icon_url=f"{user.avatar.url}")
         if reason:
             modlog_embed.add_field(name="Reason", value=f"{reason}", inline=True)

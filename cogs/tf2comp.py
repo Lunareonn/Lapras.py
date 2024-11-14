@@ -103,7 +103,6 @@ class TF2Comp(commands.Cog):
                                 class_id = config.roster_roles.index(role.id)
                                 embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="Yes", inline=True)
                                 self.available_players.append(payload.user_id)
-                                print("+ AV:", self.available_players)
                                 await vote_message.edit(embed=embed)
                                 break
                     else:
@@ -116,7 +115,6 @@ class TF2Comp(commands.Cog):
                                 class_id = config.roster_roles.index(role.id)
                                 embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="No", inline=True)
                                 self.unavailable_players.append(payload.user_id)
-                                print("+ UNAV:", self.unavailable_players)
                                 await vote_message.edit(embed=embed)
                                 break
                     else:
@@ -149,7 +147,6 @@ class TF2Comp(commands.Cog):
 
                                 embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="?", inline=True)
                                 self.available_players.remove(payload.user_id)
-                                print("- AV:", self.available_players)
                                 await vote_message.edit(embed=embed)
                                 break
 
@@ -161,7 +158,6 @@ class TF2Comp(commands.Cog):
 
                                 embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="?", inline=True)
                                 self.unavailable_players.remove(payload.user_id)
-                                print("- UNAV:", self.unavailable_players)
                                 await vote_message.edit(embed=embed)
                                 break
         except Exception as e:
