@@ -39,6 +39,14 @@ def setup_database(conn: mariadb.Connection):
                 disabled_cog BOOL,
                 CONSTRAINT cog_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS tf2comp (
+                id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                server_id INTEGER NOT NULL,
+                message_id BIGINT,
+                available_players JSON DEFAULT '[]',
+                available_classes JSON DEFAULT '[]',
+                CONSTRAINT tf2comp_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
+                );""")
 
 
 def register_server(conn: mariadb.Connection, server_id: int):
@@ -175,3 +183,32 @@ def list_disabled_cogs(conn: mariadb.Connection, server_id: int):
     cur.execute("SELECT cog, disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))
     disabled_cogs = cur.fetchall()
     return disabled_cogs
+
+
+def add_availability_message(conn: mariadb.Connection, server_id: int, message_id: int):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO tf2comp (server_id, message_id) VALUES(?, ?)", (fetched_server_id, message_id))
+    conn.commit()
+
+
+def fetch_availability_message(conn: mariadb.Connection, server_id: int):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("SELECT message_id FROM tf2comp WHERE server_id = ?", (fetched_server_id,))
+    return cur.fetchone()[0]
+
+
+def append_available_players(conn: mariadb.Connection, server_id: int, message_id: int, user_id: int, role_id: int):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("UPDATE tf2comp SET available_players = JSON_ARRAY_APPEND(available_players, '$', ?) WHERE server_id = ? AND message_id = ?", (user_id, fetched_server_id, message_id))
+    cur.execute("UPDATE tf2comp SET available_classes = JSON_ARRAY_APPEND(available_classes, '$', ?) WHERE server_id = ? AND message_id = ?", (role_id, fetched_server_id, message_id))
+    conn.commit()
+
+
+def remove_available_players(conn: mariadb.Connection, server_id: int, message_id: int, user_id: int, role_id: int):
+    pass
