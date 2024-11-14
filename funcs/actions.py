@@ -211,4 +211,9 @@ def append_available_players(conn: mariadb.Connection, server_id: int, message_i
 
 
 def remove_available_players(conn: mariadb.Connection, server_id: int, message_id: int, user_id: int, role_id: int):
-    pass
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("UPDATE tf2comp SET available_players = JSON_REMOVE(available_players, JSON_UNQUOTE(JSON_SEARCH(available_players, 'one', ?))) WHERE server_id = ? AND message_id = ?", (user_id, fetched_server_id, message_id))
+    cur.execute("UPDATE tf2comp SET available_classes = JSON_REMOVE(available_classes, JSON_UNQUOTE(JSON_SEARCH(available_classes, 'one', ?))) WHERE server_id = ? AND message_id = ?", (role_id, fetched_server_id, message_id))
+    conn.commit()
