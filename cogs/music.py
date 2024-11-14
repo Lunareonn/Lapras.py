@@ -25,7 +25,7 @@ class Music(commands.Cog):
         else:
             return
 
-        title, artist = actions.meta_scraper(link_match[0])
+        title, artist = actions.metadata_parser(link_match[0])
         (track_url,
          album_url,
          playcount,
