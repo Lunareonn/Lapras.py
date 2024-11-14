@@ -219,7 +219,6 @@ def fetch_lastfm(title: str, artist: str):
 def clean_album_description(description: str):
     regex = r" [\·\.\s]*(Album|[\d]{4}|.[0-9] songs|[\·\s]+)"
     artist = re.sub(regex, '', description).strip()
-    print(artist)
     return artist
 
 
