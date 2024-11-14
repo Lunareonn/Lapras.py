@@ -22,6 +22,7 @@ class ClassEnum(Enum):
 class TF2Comp(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.client.conn = client.conn
         self.available_players = []
         self.unavailable_players = []
         self.vote_message_id = None
@@ -36,7 +37,6 @@ class TF2Comp(commands.Cog):
     @commands.command()
     async def available(self, ctx):
         await ctx.message.delete()
-        global embed
 
         self.available_players.clear()
         self.unavailable_players.clear()
@@ -75,31 +75,65 @@ class TF2Comp(commands.Cog):
 
         embed.set_footer(text=":3")
         message = await ctx.send(embed=embed)
+        actions.add_availability_message(self.client.conn, ctx.guild.id, message.id)
         self.vote_message_id = message.id
         await message.add_reaction(u"\u2705")
         await message.add_reaction(u"\u274E")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        global embed
         main_roles = config.main_or_sub
         roster_roles = config.roster_roles
 
         channel = self.client.get_channel(payload.channel_id)
-        vote_message = await channel.fetch_message(self.vote_message_id)
+        message_id = actions.fetch_availability_message(self.client.conn, payload.guild_id)
+        vote_message = await channel.fetch_message(message_id)
         member = await channel.guild.fetch_member(payload.user_id)
+
+        embed = discord.Embed(title="Roster availability",
+                              description=u"React with \u2705 or \u274E",
+                              colour=0x0aebeb,
+                              timestamp=datetime.datetime.now())
+        embed.add_field(name="Scout",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Soldier",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Pyro",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Demo",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Heavy",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Engineer",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Medic",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Sniper",
+                        value="?",
+                        inline=True)
+        embed.add_field(name="Spy",
+                        value="?",
+                        inline=True)
 
         if payload.member == self.client.user:
             return
 
         try:
-            if payload.message_id == self.vote_message_id:
+            if payload.message_id == message_id:
                 is_main = any(role.id in main_roles for role in member.roles)
                 class_role = any(role.id in roster_roles for role in member.roles)
                 if payload.emoji.name == u'\u2705':
                     if is_main and class_role:
                         for role in member.roles:
                             if role.id in config.roster_roles:
+                                actions.append_available_players(self.client.conn, payload.guild_id, message_id, payload.user_id, role.id)
                                 class_id = config.roster_roles.index(role.id)
                                 embed.set_field_at(index=class_id, name=str(ClassEnum(class_id).name), value="Yes", inline=True)
                                 self.available_players.append(payload.user_id)
@@ -126,13 +160,17 @@ class TF2Comp(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
-        global embed
         main_roles = config.main_or_sub
         roster_roles = config.roster_roles
 
         channel = self.client.get_channel(payload.channel_id)
         vote_message = await channel.fetch_message(self.vote_message_id)
         member = await channel.guild.fetch_member(payload.user_id)
+
+        embed = discord.Embed(title="Roster availability",
+                              description=u"React with \u2705 or \u274E",
+                              colour=0x0aebeb,
+                              timestamp=datetime.datetime.now())
 
         if payload.member == self.client.user:
             return
