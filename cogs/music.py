@@ -44,7 +44,7 @@ class Music(commands.Cog):
         embed.set_author(name=f"{message.author}", icon_url=f"{message.author.avatar.url}")
         embed.set_thumbnail(url=f"{cover}")
         embed.set_footer(text=":3")
-        await message.channel.send(embed=embed)
+        await message.channel.send(embed=embed, reference=message)
 
 
 async def setup(client):
