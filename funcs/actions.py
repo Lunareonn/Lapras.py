@@ -1,5 +1,9 @@
 import mariadb
+import requests
 import config
+import re
+import json
+from bs4 import BeautifulSoup
 
 
 def setup_database(conn: mariadb.Connection):
@@ -175,3 +179,51 @@ def list_disabled_cogs(conn: mariadb.Connection, server_id: int):
     cur.execute("SELECT cog, disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))
     disabled_cogs = cur.fetchall()
     return disabled_cogs
+
+
+def metadata_parser(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    title = soup.find('meta', property="og:title")
+    artist = soup.find('meta', attrs={'name': ['music:musician_description']})
+    if artist is None:
+        description = soup.find('meta', property="og:description")
+        artist = clean_album_description(description["content"])
+        return title, artist
+
+    return title["content"], artist["content"]
+
+
+def fetch_lastfm(title: str, artist: str):
+    genre_list = ""
+    url = f"http://ws.audioscrobbler.com/2.0/?method=track.getInfo&track={title}&artist={artist}&api_key=f29bbb88ccb0b5dfdb931148109dd542&format=json"
+    headers = {'content-type': 'application/json'}
+    response = requests.get(url, headers=headers)
+    json_data = json.loads(response.text)
+
+    track_url = json_data["track"]["url"]
+    album_url = json_data["track"]["album"]["url"]
+    playcount = json_data["track"]["playcount"]
+    duration = json_data["track"]["duration"]
+    album_name = json_data["track"]["album"]["title"]
+    cover = json_data["track"]["album"]["image"][3]["#text"]
+    genres = json_data["track"]["toptags"]
+
+    for genre in genres["tag"]:
+        genre_list += f" ``{genre["name"]}`` "
+
+    return track_url, album_url, playcount, duration, album_name, cover, genre_list
+
+
+def clean_album_description(description: str):
+    regex = r" [\·\.\s]*(Album|[\d]{4}|.[0-9] songs|[\·\s]+)"
+    artist = re.sub(regex, '', description).strip()
+    print(artist)
+    return artist
+
+
+def convertMillis(duration: int):
+    seconds = int(duration / 1000) % 60
+    minutes = int(duration / (1000 * 60)) % 60
+    return minutes, seconds
