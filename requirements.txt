@@ -2,3 +2,5 @@ discord.py
 python-dotenv
 text-to-owo
 mariadb
+beautifulsoup4
+requests
