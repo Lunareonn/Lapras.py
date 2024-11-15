@@ -14,8 +14,7 @@ client = commands.AutoShardedBot(shard_count=1,
                                  intents=intents)
 
 log = logging.getLogger('discord')
-log.setLevel(logging.DEBUG)
-logging.getLogger('discord.http').setLevel(logging.INFO)
+log.setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
     filename="discord.log",
