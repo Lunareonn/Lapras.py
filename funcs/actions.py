@@ -214,7 +214,7 @@ def fetch_lastfm(title: str, artist: str, token: str):
     genres = json_data["track"]["toptags"]
 
     for genre in genres["tag"]:
-        genre_list += f" ``{genre["name"]}`` "
+        genre_list += f" ``{genre['name']}`` "
 
     return track_url, album_url, playcount, duration, album_name, cover, genre_list
 
