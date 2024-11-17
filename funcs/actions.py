@@ -204,7 +204,7 @@ def fetch_lastfm(title: str, artist: str):
     json_data = json.loads(response.text)
 
     try:
-        if "Track not found" in json_data["message"]:
+        if json_data["message"]:
             return
     except KeyError:
         pass
