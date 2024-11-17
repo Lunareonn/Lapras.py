@@ -42,6 +42,14 @@ def setup_database(conn: mariadb.Connection):
                 disabled_cog BOOL,
                 CONSTRAINT cog_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS reminders (
+                id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                server_id INTEGER NOT NULL,
+                user_id BIGINT NOT NULL,
+                remind_at DATETIME NOT NULL,
+                reminder_message TEXT NOT NULL,
+                CONSTRAINT reminders_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
+                );""")
 
 
 def register_server(conn: mariadb.Connection, server_id: int):
