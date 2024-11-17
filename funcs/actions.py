@@ -190,6 +190,7 @@ def metadata_parser(url):
     if artist is None:
         description = soup.find('meta', property="og:description")
         artist = clean_album_description(description["content"])
+        print(artist)
         return title, artist
 
     return title["content"], artist["content"]
@@ -201,6 +202,12 @@ def fetch_lastfm(title: str, artist: str):
     headers = {'content-type': 'application/json'}
     response = requests.get(url, headers=headers)
     json_data = json.loads(response.text)
+
+    try:
+        if "Track not found" in json_data["message"]:
+            return
+    except KeyError:
+        pass
 
     track_url = json_data["track"]["url"]
     album_url = json_data["track"]["album"]["url"]

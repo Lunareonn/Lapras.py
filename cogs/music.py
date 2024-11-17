@@ -25,14 +25,17 @@ class Music(commands.Cog):
         else:
             return
 
-        title, artist = actions.metadata_parser(link_match[0])
-        (track_url,
-         album_url,
-         playcount,
-         duration,
-         album_name,
-         cover,
-         genre_list) = actions.fetch_lastfm(title, artist)
+        try:
+            title, artist = actions.metadata_parser(link_match[0])
+            (track_url,
+             album_url,
+             playcount,
+             duration,
+             album_name,
+             cover,
+             genre_list) = actions.fetch_lastfm(title, artist)
+        except TypeError:
+            return
 
         minutes, seconds = actions.convertMillis(int(duration))
 
