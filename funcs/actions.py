@@ -1,7 +1,6 @@
 import mariadb
 import requests
 import config
-import re
 import json
 from bs4 import BeautifulSoup
 
@@ -188,10 +187,7 @@ def metadata_parser(url):
     title = soup.find('meta', property="og:title")
     artist = soup.find('meta', attrs={'name': ['music:musician_description']})
     if artist is None:
-        description = soup.find('meta', property="og:description")
-        artist = clean_album_description(description["content"])
-        print(artist)
-        return title, artist
+        return
 
     return title["content"], artist["content"]
 
@@ -221,12 +217,6 @@ def fetch_lastfm(title: str, artist: str):
         genre_list += f" ``{genre["name"]}`` "
 
     return track_url, album_url, playcount, duration, album_name, cover, genre_list
-
-
-def clean_album_description(description: str):
-    regex = r" [\·\.\s]*(Album|[\d]{4}|.[0-9] songs|[\·\s]+)"
-    artist = re.sub(regex, '', description).strip()
-    return artist
 
 
 def convertMillis(duration: int):
