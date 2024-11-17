@@ -1,5 +1,7 @@
 import re
 import discord
+import os
+from dotenv import load_dotenv
 from funcs import actions
 from datetime import datetime
 from discord.ext import commands
@@ -7,7 +9,9 @@ from discord.ext import commands
 
 class Music(commands.Cog):
     def __init__(self, client):
+        load_dotenv()
         self.client = client
+        self.TOKEN = os.getenv("LASTFM_TOKEN")
 
     def cog_check(self, ctx):
         selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "music")
@@ -33,7 +37,7 @@ class Music(commands.Cog):
              duration,
              album_name,
              cover,
-             genre_list) = actions.fetch_lastfm(title, artist)
+             genre_list) = actions.fetch_lastfm(title, artist, self.TOKEN)
         except TypeError:
             return
 

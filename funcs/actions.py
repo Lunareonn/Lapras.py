@@ -192,9 +192,9 @@ def metadata_parser(url):
     return title["content"], artist["content"]
 
 
-def fetch_lastfm(title: str, artist: str):
+def fetch_lastfm(title: str, artist: str, token: str):
     genre_list = ""
-    url = f"http://ws.audioscrobbler.com/2.0/?method=track.getInfo&track={title}&artist={artist}&api_key=f29bbb88ccb0b5dfdb931148109dd542&format=json"
+    url = f"http://ws.audioscrobbler.com/2.0/?method=track.getInfo&track={title}&artist={artist}&api_key={token}&format=json"
     headers = {'content-type': 'application/json'}
     response = requests.get(url, headers=headers)
     json_data = json.loads(response.text)
