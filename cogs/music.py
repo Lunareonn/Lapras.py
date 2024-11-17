@@ -41,7 +41,7 @@ class Music(commands.Cog):
 
         embed = discord.Embed(title=f"{artist} - {title}",
                               url=f"{track_url}",
-                              description=f"Album: [{album_name}]({album_url})\nDuration: {minutes}:{seconds}\nPlay count: {playcount}\n\nGenre(s): {genre_list}",
+                              description=f"Album: [{album_name}]({album_url})\nDuration: {minutes}:{seconds:02d}\nPlay count: {playcount}\n\nGenre(s): {genre_list}",
                               colour=0x00b0f4,
                               timestamp=datetime.now())
         embed.set_author(name=f"{message.author}", icon_url=f"{message.author.avatar.url}")
