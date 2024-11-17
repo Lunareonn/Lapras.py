@@ -26,6 +26,7 @@ loaded_cogs = [
     "moderation",
     "tf2comp",
     "utility",
+    "music",
 ]
 
 bot_version = "1.1.5"
