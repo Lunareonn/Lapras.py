@@ -117,6 +117,7 @@ class Utility(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         link_regex = r"https?://(?:(?:ptb|canary)\.)?discord(app)?\.com\/channels\/(\d+)\/(\d+)\/(\d+)"
+        file_regex = r".*\.(jpg|jpeg|png|gif|bmp|webp)$"
         link_match = re.match(link_regex, message.content)
         if link_match:
             message_id = link_match.groups()
@@ -125,6 +126,19 @@ class Utility(commands.Cog):
             return
 
         embed = discord.Embed(description=f"{fetched_message.content}", colour=0x05c7ef)
+        if len(fetched_message.attachments) > 0:
+            attachment_filenames = ""
+            for attachment_id in range(len(fetched_message.attachments)):
+                file_match = re.match(file_regex, fetched_message.attachments[attachment_id].filename)
+                attachment_filenames += f" ``{fetched_message.attachments[attachment_id].filename}`` "
+                if file_match:
+                    attached_image = fetched_message.attachments[attachment_id].url
+
+            embed.add_field(name="Attachments:", value=attachment_filenames)
+            # If there is no image, set_image does nothing
+            embed.set_image(url=attached_image)
+        else:
+            pass
         embed.set_author(name=f"{fetched_message.author}", icon_url=f"{fetched_message.author.display_avatar.url}")
         embed.add_field(name="Jump to message",
                         value=f"[Click here]({fetched_message.jump_url})",
