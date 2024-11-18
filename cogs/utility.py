@@ -125,6 +125,10 @@ class Utility(commands.Cog):
             return
 
         embed = discord.Embed(description=f"{fetched_message.content}", colour=0x05c7ef)
+        if len(fetched_message.attachments) > 0:
+            embed.set_image(url=fetched_message.attachments[0].url)
+        else:
+            pass
         embed.set_author(name=f"{fetched_message.author}", icon_url=f"{fetched_message.author.display_avatar.url}")
         embed.add_field(name="Jump to message",
                         value=f"[Click here]({fetched_message.jump_url})",
