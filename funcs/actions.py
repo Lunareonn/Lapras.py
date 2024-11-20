@@ -32,7 +32,8 @@ def setup_database(conn: mariadb.Connection):
                 issuer_id BIGINT NOT NULL,
                 user_id BIGINT NOT NULL,
                 reason TEXT,
-                count INTEGER NOT NULL,
+                count INTEGER,
+                action TEXT NOT NULL,
                 CONSTRAINT moderation_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
     cur.execute("""CREATE TABLE IF NOT EXISTS cogs (
@@ -223,3 +224,16 @@ def convertMillis(duration: int):
     seconds = int(duration / 1000) % 60
     minutes = int(duration / (1000 * 60)) % 60
     return minutes, seconds
+
+
+def add_mod_record(conn: mariadb.Connection, server_id: int, issuer_id: int, user_id: int, reason: str, count: int, action: str):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO moderation (server_id, issuer_id, user_id, reason, count, action) VALUES (?,?,?,?,?,?)", (fetched_server_id,
+                                                                                                                       issuer_id,
+                                                                                                                       user_id,
+                                                                                                                       reason,
+                                                                                                                       count,
+                                                                                                                       action))
+    conn.commit()
