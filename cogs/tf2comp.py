@@ -81,6 +81,9 @@ class TF2Comp(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        if payload.message_id != self.vote_message_id:
+            return
+
         global embed
         main_roles = config.main_or_sub
         roster_roles = config.roster_roles
@@ -124,6 +127,9 @@ class TF2Comp(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
+        if payload.message_id != self.vote_message_id:
+            return
+
         global embed
         main_roles = config.main_or_sub
         roster_roles = config.roster_roles
