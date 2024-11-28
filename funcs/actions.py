@@ -2,7 +2,9 @@ import mariadb
 import requests
 import config
 import json
+import re
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 
 
 def setup_database(conn: mariadb.Connection):
@@ -41,6 +43,14 @@ def setup_database(conn: mariadb.Connection):
                 cog TEXT,
                 disabled_cog BOOL,
                 CONSTRAINT cog_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
+                );""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS reminders (
+                id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                server_id INTEGER NOT NULL,
+                user_id BIGINT NOT NULL,
+                remind_at DATETIME NOT NULL,
+                reminder_message TEXT NOT NULL,
+                CONSTRAINT reminders_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
 
 
@@ -223,3 +233,34 @@ def convertMillis(duration: int):
     seconds = int(duration / 1000) % 60
     minutes = int(duration / (1000 * 60)) % 60
     return minutes, seconds
+
+
+def get_timedelta(time):
+    regex = re.compile(r"(\d+)([smhdw])")
+
+    match = regex.match(time)
+    if not match:
+        raise ValueError("Invalid time format")
+
+    amount = int(match.group(1))
+    unit = match.group(2)
+    time_deltas = {
+        's': timedelta(seconds=amount),
+        'm': timedelta(minutes=amount),
+        'h': timedelta(hours=amount),
+        'd': timedelta(days=amount),
+        'w': timedelta(weeks=amount)
+    }
+
+    if unit in time_deltas:
+        return datetime.now() + time_deltas[unit]
+    else:
+        raise ValueError("Unsupported time unit")
+
+
+def add_reminder(conn: mariadb.Connection, server_id: int, user_id: int, remind_at, message: str):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO reminders (server_id, user_id, remind_at, reminder_message) VALUES(?, ?, ?, ?)", (fetched_server_id, user_id, remind_at, message))
+    conn.commit()

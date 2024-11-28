@@ -27,6 +27,7 @@ loaded_cogs = [
     "tf2comp",
     "utility",
     "music",
+    "remindme",
 ]
 
 bot_version = "1.1.5"
