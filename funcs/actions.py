@@ -194,7 +194,6 @@ def list_disabled_cogs(conn: mariadb.Connection, server_id: int):
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT cog, disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))
     disabled_cogs = cur.fetchall()
-    pconn.close()
     return disabled_cogs
 
 
