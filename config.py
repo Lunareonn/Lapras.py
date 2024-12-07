@@ -30,4 +30,4 @@ loaded_cogs = [
 ]
 
 bot_version = "1.1.5"
-connection_pool_size = 30
+connection_pool_size = 8
