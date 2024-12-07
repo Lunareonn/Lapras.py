@@ -36,7 +36,7 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild):
-    actions.register_server(client.conn, guild.id)
+    actions.register_server(client.pconn, guild.id)
     log.info(f"Bot was added to server {guild}")
 
 
@@ -53,14 +53,16 @@ async def setup_hook():
 
 if __name__ == "__main__":
     TOKEN = os.getenv("TOKEN")
-    conn = mariadb.connect(
+    connpool = mariadb.ConnectionPool(
         user=os.getenv("DATABASE_USER"),
         password=os.getenv("DATABASE_PASS"),
         host=os.getenv("DATABASE_HOST"),
         port=int(os.getenv("DATABASE_PORT")),
-        database=os.getenv("DATABASE_NAME")
+        database=os.getenv("DATABASE_NAME"),
+        pool_name="lapras",
+        pool_size=config.connection_pool_size
     )
 
-    actions.setup_database(conn)
-    client.conn = conn
+    client.pconn = connpool
+    actions.setup_database(client.pconn)
     client.run(TOKEN, log_handler=None)

@@ -6,10 +6,10 @@ from discord.ext import commands
 class Macros(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.client.conn = client.conn
+        self.client.pconn = client.pconn
 
     def cog_check(self, ctx):
-        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "macros")
+        selected_cog = actions.check_if_cog_disabled(self.client.pconn, ctx.guild.id, "macros")
         if selected_cog:
             return False
         return True
@@ -18,7 +18,7 @@ class Macros(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def macroadd(self, ctx, name: str, *, content: str):
         try:
-            actions.add_macro(self.client.conn, ctx.message.guild.id, name, content)
+            actions.add_macro(self.client.pconn, ctx.message.guild.id, name, content)
         except mariadb.IntegrityError:
             await ctx.send(f"Macro ``{name}`` already exists")
             return
@@ -32,7 +32,7 @@ class Macros(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(moderate_members=True)
     async def macroremove(self, ctx, name):
-        actions.delete_macro(self.client.conn, name)
+        actions.delete_macro(self.client.pconn, name)
         await ctx.send(f"Removed macro {name}")
 
     @macroremove.error
@@ -43,7 +43,7 @@ class Macros(commands.Cog):
     @commands.hybrid_command()
     async def m(self, ctx, name):
         try:
-            content = actions.fetch_macro(self.client.conn, ctx.message.guild.id, name)
+            content = actions.fetch_macro(self.client.pconn, ctx.message.guild.id, name)
         except TypeError:
             await ctx.send(f"``{name}`` is not a valid macro.")
 
@@ -59,7 +59,7 @@ class Macros(commands.Cog):
 
     @commands.hybrid_command()
     async def macros(self, ctx):
-        macros = actions.fetch_macro_list(self.client.conn, ctx.message.guild.id)
+        macros = actions.fetch_macro_list(self.client.pconn, ctx.message.guild.id)
 
         macros_string = "**Available macros:**\n"
         macros_list = ""

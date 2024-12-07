@@ -27,7 +27,7 @@ class TF2Comp(commands.Cog):
         self.vote_message_id = None
 
     def cog_check(self, ctx):
-        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "tf2comp")
+        selected_cog = actions.check_if_cog_disabled(self.client.pconn, ctx.guild.id, "tf2comp")
         if selected_cog:
             return False
         return True

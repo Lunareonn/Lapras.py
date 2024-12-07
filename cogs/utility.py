@@ -9,7 +9,7 @@ from discord.ext import commands
 class Utility(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.client.conn = client.conn
+        self.client.pconn = client.pconn
 
     @commands.hybrid_group()
     @commands.is_owner()
@@ -43,13 +43,13 @@ class Utility(commands.Cog):
 
     @commands.command()
     async def setautorole(self, ctx, role: discord.Role):
-        actions.set_config_autorole(self.client.conn, ctx.guild.id, role.id)
+        actions.set_config_autorole(self.client.pconn, ctx.guild.id, role.id)
         await ctx.send(f"Autorole set! New members will be assigned <@&{role.id}>")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         try:
-            role_id = actions.fetch_autorole(self.client.conn, member.guild.id)
+            role_id = actions.fetch_autorole(self.client.pconn, member.guild.id)
         except TypeError:
             return
         role = member.guild.get_role(role_id)
@@ -107,12 +107,12 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def manualregister(self, ctx):
-        cur = self.client.conn.cursor()
+        cur = self.client.pconn.cursor()
         cur.execute("SELECT server_id FROM servers WHERE server_id = ?", (ctx.guild.id,))
         if cur.fetchone() is not None:
             return await ctx.send(f"Server {ctx.guild.id} already in database")
         else:
-            actions.register_server(self.client.conn, ctx.guild.id)
+            actions.register_server(self.client.pconn, ctx.guild.id)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -154,7 +154,7 @@ class Utility(commands.Cog):
     @cog.command()
     @commands.has_permissions(administrator=True)
     async def enable(self, ctx, cog: str):
-        valid_cog = actions.enable_cog(self.client.conn, ctx.guild.id, cog)
+        valid_cog = actions.enable_cog(self.client.pconn, ctx.guild.id, cog)
         if valid_cog is False:
             await ctx.send(f"{cog} is not a valid cog.")
             return
@@ -163,7 +163,7 @@ class Utility(commands.Cog):
     @cog.command()
     @commands.has_permissions(administrator=True)
     async def disable(self, ctx, cog: str):
-        valid_cog = actions.disable_cog(self.client.conn, ctx.guild.id, cog)
+        valid_cog = actions.disable_cog(self.client.pconn, ctx.guild.id, cog)
         if valid_cog is False:
             await ctx.send(f"{cog} is not a valid cog.")
             return
@@ -171,7 +171,7 @@ class Utility(commands.Cog):
 
     @cog.command()
     async def list(self, ctx):
-        disabled_cogs = actions.list_disabled_cogs(self.client.conn, ctx.guild.id)
+        disabled_cogs = actions.list_disabled_cogs(self.client.pconn, ctx.guild.id)
 
         cogs_string = f"**Disabled cogs on {ctx.guild.name}:**\n"
         cogs_list = ""

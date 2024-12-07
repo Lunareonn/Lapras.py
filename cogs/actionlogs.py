@@ -7,10 +7,10 @@ from funcs import actions
 class Actionlogs(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.client.conn = client.conn
+        self.client.pconn = client.pconn
 
     def cog_check(self, ctx):
-        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "actionlogs")
+        selected_cog = actions.check_if_cog_disabled(self.client.pconn, ctx.guild.id, "actionlogs")
         if selected_cog:
             return False
         return True
@@ -18,7 +18,7 @@ class Actionlogs(commands.Cog):
     @commands.has_permissions(ban_members=True)
     @commands.command()
     async def setlogs(self, ctx, channel: discord.TextChannel):
-        actions.set_config_actionlog(self.client.conn, ctx.message.guild.id, channel.id)
+        actions.set_config_actionlog(self.client.pconn, ctx.message.guild.id, channel.id)
         await ctx.send(f"Set actionlog channel to <#{channel.id}>")
 
     @commands.Cog.listener()
@@ -37,7 +37,7 @@ class Actionlogs(commands.Cog):
         embed.set_footer(text='')
 
         try:
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, message_before.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, message_before.guild.id)
         except TypeError:
             return
         channel = await self.client.fetch_channel(channel_id)
@@ -58,7 +58,7 @@ class Actionlogs(commands.Cog):
             embed.timestamp = datetime.datetime.now()
             embed.set_footer(text='')
 
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, message.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, message.guild.id)
             channel = await self.client.fetch_channel(channel_id)
             await channel.send(embed=embed)
         else:
@@ -70,7 +70,7 @@ class Actionlogs(commands.Cog):
             embed.set_footer(text='')
 
             try:
-                channel_id = actions.fetch_actionlog_channel(self.client.conn, message.guild.id)
+                channel_id = actions.fetch_actionlog_channel(self.client.pconn, message.guild.id)
             except TypeError:
                 return
             channel = await self.client.fetch_channel(channel_id)
@@ -85,7 +85,7 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
         embed.set_footer(text=f"Member Count: {member.guild.member_count}")
 
-        channel_id = actions.fetch_actionlog_channel(self.client.conn, member.guild.id)
+        channel_id = actions.fetch_actionlog_channel(self.client.pconn, member.guild.id)
         channel = await self.client.fetch_channel(channel_id)
         await channel.send(embed=embed)
 
@@ -101,7 +101,7 @@ class Actionlogs(commands.Cog):
             embed.set_footer(text=f"Member Count: {member.guild.member_count} ")
 
             try:
-                channel_id = actions.fetch_actionlog_channel(self.client.conn, member.guild.id)
+                channel_id = actions.fetch_actionlog_channel(self.client.pconn, member.guild.id)
             except TypeError:
                 return
             channel = await self.client.fetch_channel(channel_id)
@@ -113,7 +113,7 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
 
         try:
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, role.guild.id)
         except TypeError:
             return
         channel = await self.client.fetch_channel(channel_id)
@@ -125,7 +125,7 @@ class Actionlogs(commands.Cog):
         embed.timestamp = datetime.datetime.now()
 
         try:
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, role.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, role.guild.id)
         except TypeError:
             return
         channel = await self.client.fetch_channel(channel_id)
