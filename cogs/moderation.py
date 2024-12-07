@@ -7,10 +7,10 @@ from funcs import actions
 class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.client.conn = client.conn
+        self.client.pconn = client.pconn
 
     def cog_check(self, ctx):
-        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "moderation")
+        selected_cog = actions.check_if_cog_disabled(self.client.pconn, ctx.guild.id, "moderation")
         if selected_cog:
             return False
         return True
@@ -38,7 +38,7 @@ class Moderation(commands.Cog):
             pass
 
         try:
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, ctx.guild.id)
         except TypeError:
             return
         channel = await self.client.fetch_channel(channel_id)
@@ -93,7 +93,7 @@ class Moderation(commands.Cog):
             pass
 
         try:
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, ctx.guild.id)
         except TypeError:
             return
         channel = await self.client.fetch_channel(channel_id)
@@ -129,7 +129,7 @@ class Moderation(commands.Cog):
     @commands.command()
     async def unban(self, ctx, user: discord.Member):
         try:
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, ctx.guild.id)
         except TypeError:
             return
         channel = await self.client.fetch_channel(channel_id)
@@ -184,7 +184,7 @@ class Moderation(commands.Cog):
             pass
 
         try:
-            channel_id = actions.fetch_actionlog_channel(self.client.conn, ctx.guild.id)
+            channel_id = actions.fetch_actionlog_channel(self.client.pconn, ctx.guild.id)
         except TypeError:
             return
         channel = await self.client.fetch_channel(channel_id)

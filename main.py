@@ -36,7 +36,7 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild):
-    actions.register_server(client.conn, guild.id)
+    actions.register_server(client.pconn, guild.id)
     log.info(f"Bot was added to server {guild}")
 
 
