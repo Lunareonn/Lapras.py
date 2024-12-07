@@ -14,7 +14,7 @@ class Music(commands.Cog):
         self.TOKEN = os.getenv("LASTFM_TOKEN")
 
     def cog_check(self, ctx):
-        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "music")
+        selected_cog = actions.check_if_cog_disabled(self.client.pconn, ctx.guild.id, "music")
         if selected_cog:
             return False
         return True

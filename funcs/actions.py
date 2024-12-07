@@ -6,7 +6,9 @@ from bs4 import BeautifulSoup
 
 
 def setup_database(conn: mariadb.Connection):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
+
     cur.execute("""CREATE TABLE IF NOT EXISTS servers (
                  id INTEGER PRIMARY KEY AUTO_INCREMENT,
                  server_id BIGINT NOT NULL
@@ -46,30 +48,36 @@ def setup_database(conn: mariadb.Connection):
 
 
 def register_server(conn: mariadb.Connection, server_id: int):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
+
+    cur = pconn.cursor()
     cur.execute("INSERT INTO servers (server_id) VALUES (?)", (server_id,))
     cur.execute("INSERT INTO configs (server_id) VALUES(?);", (cur.lastrowid,))
-    conn.commit()
+    pconn.commit()
 
 
 def set_config_autorole(conn: mariadb.Connection, server_id: int, role_id: int):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("UPDATE configs SET autorole_id = ? WHERE server_id = ?;", (role_id, fetched_server_id))
-    conn.commit()
+    pconn.commit()
 
 
 def set_config_actionlog(conn: mariadb.Connection, server_id: int, channel_id: int):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("UPDATE configs SET actionlogs_channel_id = ? WHERE server_id = ?;", (channel_id, fetched_server_id))
-    conn.commit()
+    pconn.commit()
 
 
 def fetch_actionlog_channel(conn: mariadb.Connection, server_id: int):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT actionlogs_channel_id FROM configs WHERE server_id = ?", (fetched_server_id,))
@@ -78,7 +86,8 @@ def fetch_actionlog_channel(conn: mariadb.Connection, server_id: int):
 
 
 def fetch_autorole(conn: mariadb.Connection, server_id: int):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT autorole_id FROM configs WHERE server_id = ?", (fetched_server_id,))
@@ -87,21 +96,24 @@ def fetch_autorole(conn: mariadb.Connection, server_id: int):
 
 
 def add_macro(conn: mariadb.Connection, server_id: int, name: str, content: str):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("INSERT INTO macros (server_id, name, content) VALUES (?, ?, ?)", (fetched_server_id, name, content))
-    conn.commit()
+    pconn.commit()
 
 
 def delete_macro(conn: mariadb.Connection, name: str):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("DELETE FROM macros WHERE name = ?", (name,))
-    conn.commit()
+    pconn.commit()
 
 
 def fetch_macro(conn: mariadb.Connection, server_id: int, name: str):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT content FROM macros WHERE name = ? AND server_id = ?", (name, fetched_server_id))
@@ -110,7 +122,8 @@ def fetch_macro(conn: mariadb.Connection, server_id: int, name: str):
 
 
 def fetch_macro_list(conn: mariadb.Connection, server_id: int):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT name FROM macros WHERE server_id = ?", (fetched_server_id,))
@@ -124,16 +137,17 @@ def enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
     else:
         return False
 
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cog_disabled = check_if_cog_disabled(conn, server_id, cog)
     if cog_disabled is False:
         cur.execute("INSERT INTO cogs (server_id, cog, disabled_cog) VALUES (?,?,?)", (fetched_server_id, cog, False))
-        conn.commit()
+        pconn.commit()
     else:
         cur.execute("UPDATE cogs SET disabled_cog = ? WHERE cog = ? AND server_id = ?", (False, cog, fetched_server_id))
-        conn.commit()
+        pconn.commit()
 
 
 def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
@@ -142,7 +156,8 @@ def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
     else:
         return False
 
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cog_disabled = check_if_cog_disabled(conn, server_id, cog)
@@ -154,14 +169,15 @@ def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
             fetched_cog = cur.fetchone()[0]
             if cog in fetched_cog:
                 cur.execute("UPDATE cogs SET disabled_cog = ? WHERE cog = ? AND server_id = ?", (True, cog, fetched_server_id))
-                return conn.commit()
+                return pconn.commit()
         except TypeError:
             cur.execute("INSERT INTO cogs (server_id, cog, disabled_cog) VALUES (?,?,?)", (fetched_server_id, cog, True))
-            return conn.commit()
+            return pconn.commit()
 
 
 def check_if_cog_disabled(conn: mariadb.Connection, server_id: int, cog: str):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT disabled_cog FROM cogs WHERE cog = ? AND server_id = ?", (cog, fetched_server_id))
@@ -173,7 +189,8 @@ def check_if_cog_disabled(conn: mariadb.Connection, server_id: int, cog: str):
 
 
 def list_disabled_cogs(conn: mariadb.Connection, server_id: int):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT cog, disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))

@@ -6,10 +6,10 @@ import owo
 class Memes(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.client.conn = client.conn
+        self.client.pconn = client.pconn
 
     def cog_check(self, ctx):
-        selected_cog = actions.check_if_cog_disabled(self.client.conn, ctx.guild.id, "memes")
+        selected_cog = actions.check_if_cog_disabled(self.client.pconn, ctx.guild.id, "memes")
         if selected_cog:
             return False
         return True
