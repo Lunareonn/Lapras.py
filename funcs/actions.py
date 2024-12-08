@@ -45,6 +45,8 @@ def setup_database(conn: mariadb.Connection):
                 CONSTRAINT cog_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
 
+    pconn.close()
+
 
 def register_server(conn: mariadb.Connection, server_id: int):
     pconn = conn.get_connection()
@@ -54,6 +56,7 @@ def register_server(conn: mariadb.Connection, server_id: int):
     cur.execute("INSERT INTO servers (server_id) VALUES (?)", (server_id,))
     cur.execute("INSERT INTO configs (server_id) VALUES(?);", (cur.lastrowid,))
     pconn.commit()
+    pconn.close()
 
 
 def set_config_autorole(conn: mariadb.Connection, server_id: int, role_id: int):
@@ -63,6 +66,7 @@ def set_config_autorole(conn: mariadb.Connection, server_id: int, role_id: int):
     fetched_server_id = cur.fetchone()[0]
     cur.execute("UPDATE configs SET autorole_id = ? WHERE server_id = ?;", (role_id, fetched_server_id))
     pconn.commit()
+    pconn.close()
 
 
 def set_config_actionlog(conn: mariadb.Connection, server_id: int, channel_id: int):
@@ -72,6 +76,7 @@ def set_config_actionlog(conn: mariadb.Connection, server_id: int, channel_id: i
     fetched_server_id = cur.fetchone()[0]
     cur.execute("UPDATE configs SET actionlogs_channel_id = ? WHERE server_id = ?;", (channel_id, fetched_server_id))
     pconn.commit()
+    pconn.close()
 
 
 def fetch_actionlog_channel(conn: mariadb.Connection, server_id: int):
@@ -81,6 +86,7 @@ def fetch_actionlog_channel(conn: mariadb.Connection, server_id: int):
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT actionlogs_channel_id FROM configs WHERE server_id = ?", (fetched_server_id,))
     fetched_channel_id = cur.fetchone()[0]
+    pconn.close()
     return fetched_channel_id
 
 
@@ -91,6 +97,7 @@ def fetch_autorole(conn: mariadb.Connection, server_id: int):
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT autorole_id FROM configs WHERE server_id = ?", (fetched_server_id,))
     fetched_role_id = cur.fetchone()[0]
+    pconn.close()
     return fetched_role_id
 
 
@@ -101,6 +108,7 @@ def add_macro(conn: mariadb.Connection, server_id: int, name: str, content: str)
     fetched_server_id = cur.fetchone()[0]
     cur.execute("INSERT INTO macros (server_id, name, content) VALUES (?, ?, ?)", (fetched_server_id, name, content))
     pconn.commit()
+    pconn.close()
 
 
 def delete_macro(conn: mariadb.Connection, name: str):
@@ -108,6 +116,7 @@ def delete_macro(conn: mariadb.Connection, name: str):
     cur = pconn.cursor()
     cur.execute("DELETE FROM macros WHERE name = ?", (name,))
     pconn.commit()
+    pconn.close()
 
 
 def fetch_macro(conn: mariadb.Connection, server_id: int, name: str):
@@ -117,6 +126,7 @@ def fetch_macro(conn: mariadb.Connection, server_id: int, name: str):
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT content FROM macros WHERE name = ? AND server_id = ?", (name, fetched_server_id))
     content = cur.fetchone()[0]
+    pconn.close()
     return content
 
 
@@ -127,6 +137,7 @@ def fetch_macro_list(conn: mariadb.Connection, server_id: int):
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT name FROM macros WHERE server_id = ?", (fetched_server_id,))
     macros = cur.fetchall()
+    pconn.close()
     return macros
 
 
@@ -144,9 +155,11 @@ def enable_cog(conn: mariadb.Connection, server_id: int, cog: str):
     if cog_disabled is False:
         cur.execute("INSERT INTO cogs (server_id, cog, disabled_cog) VALUES (?,?,?)", (fetched_server_id, cog, False))
         pconn.commit()
+        pconn.close()
     else:
         cur.execute("UPDATE cogs SET disabled_cog = ? WHERE cog = ? AND server_id = ?", (False, cog, fetched_server_id))
         pconn.commit()
+        pconn.close()
 
 
 def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
@@ -161,6 +174,7 @@ def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
     fetched_server_id = cur.fetchone()[0]
     cog_disabled = check_if_cog_disabled(conn, server_id, cog)
     if cog_disabled is True:
+        pconn.close()
         return False
     else:
         cur.execute("SELECT cog FROM cogs WHERE cog = ? AND server_id = ?", (cog, fetched_server_id))
@@ -168,10 +182,12 @@ def disable_cog(conn: mariadb.Connection, server_id: int, cog: str):
             fetched_cog = cur.fetchone()[0]
             if cog in fetched_cog:
                 cur.execute("UPDATE cogs SET disabled_cog = ? WHERE cog = ? AND server_id = ?", (True, cog, fetched_server_id))
-                return pconn.commit()
+                pconn.commit()
+                return pconn.close()
         except TypeError:
             cur.execute("INSERT INTO cogs (server_id, cog, disabled_cog) VALUES (?,?,?)", (fetched_server_id, cog, True))
-            return pconn.commit()
+            pconn.commit()
+            return pconn.close()
 
 
 def check_if_cog_disabled(conn: mariadb.Connection, server_id: int, cog: str):
@@ -182,8 +198,10 @@ def check_if_cog_disabled(conn: mariadb.Connection, server_id: int, cog: str):
     cur.execute("SELECT disabled_cog FROM cogs WHERE cog = ? AND server_id = ?", (cog, fetched_server_id))
     try:
         selected_cog = cur.fetchone()[0]
+        pconn.close()
         return selected_cog
     except TypeError:
+        pconn.close()
         return False
 
 
@@ -194,6 +212,7 @@ def list_disabled_cogs(conn: mariadb.Connection, server_id: int):
     fetched_server_id = cur.fetchone()[0]
     cur.execute("SELECT cog, disabled_cog FROM cogs WHERE server_id = ?", (fetched_server_id,))
     disabled_cogs = cur.fetchall()
+    pconn.close()
     return disabled_cogs
 
 
