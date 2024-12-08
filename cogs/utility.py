@@ -1,7 +1,6 @@
 import discord
 import re
 import platform
-import config
 from funcs import actions
 from discord.ext import commands
 
@@ -97,10 +96,12 @@ class Utility(commands.Cog):
     @commands.command()
     async def about(self, ctx):
         author = await self.client.fetch_user(237605319159709696)
+        commit_date = actions.fetch_commit_data()[0]
+        link = actions.fetch_commit_data()[1]
 
         embed = discord.Embed(title="Lapras.py", url="https://github.com/Lunareonn/Lapras.py", description="Lapras is a multifunctional bot created by Lunareonn", color=0x399bfd)
         embed.add_field(name="Author", value=f"<@{author.id}>", inline=True)
-        embed.add_field(name="Version", value=config.bot_version, inline=True)
+        embed.add_field(name="Last commit", value=f"[<t:{commit_date}:d> <t:{commit_date}:t>]({link})", inline=True)
         embed.set_footer(text=f"Discord.py {discord.__version__} | Python {platform.python_version()}")
         await ctx.send(embed=embed)
 
