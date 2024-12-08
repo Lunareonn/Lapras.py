@@ -29,5 +29,4 @@ loaded_cogs = [
     "music",
 ]
 
-bot_version = "1.1.5"
 connection_pool_size = 8
