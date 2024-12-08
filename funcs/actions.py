@@ -2,6 +2,7 @@ import mariadb
 import requests
 import config
 import json
+from datetime import datetime
 from bs4 import BeautifulSoup
 
 
@@ -259,3 +260,18 @@ def convertMillis(duration: int):
     seconds = int(duration / 1000) % 60
     minutes = int(duration / (1000 * 60)) % 60
     return minutes, seconds
+
+
+def fetch_commit_data():
+    url = "https://api.github.com/repos/Lunareonn/Lapras.py/commits/main"
+    headers = {'content-type': 'application/json'}
+    response = requests.get(url, headers=headers)
+    json_data = json.loads(response.text)
+
+    date = json_data["commit"]["author"]["date"]
+    date = datetime.fromisoformat(date.replace("Z", "+00:00"))
+
+    link = json_data["html_url"]
+
+    timestamp = int(date.timestamp())
+    return timestamp, link
