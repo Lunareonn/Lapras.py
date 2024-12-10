@@ -279,7 +279,8 @@ def fetch_commit_data():
 
 
 def add_mod_record(conn: mariadb.Connection, server_id: int, issuer_id: int, user_id: int, reason: str, count: int, action: str):
-    cur = conn.cursor()
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
     cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
     fetched_server_id = cur.fetchone()[0]
     cur.execute("INSERT INTO moderation (server_id, issuer_id, user_id, reason, count, action) VALUES (?,?,?,?,?,?)", (fetched_server_id,
@@ -288,4 +289,4 @@ def add_mod_record(conn: mariadb.Connection, server_id: int, issuer_id: int, use
                                                                                                                        reason,
                                                                                                                        count,
                                                                                                                        action))
-    conn.commit()
+    pconn.commit()
