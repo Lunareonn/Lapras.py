@@ -290,3 +290,13 @@ def add_mod_record(conn: mariadb.Connection, server_id: int, issuer_id: int, use
                                                                                                                        count,
                                                                                                                        action))
     pconn.commit()
+
+
+def fetch_warn_count(conn: mariadb.Connection, server_id: int, user_id: int):
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("SELECT count FROM moderation WHERE server_id = ? AND user_id = ?", (fetched_server_id, user_id))
+    count = cur.fetchone()[0]
+    return count
