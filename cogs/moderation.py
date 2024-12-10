@@ -16,6 +16,7 @@ class Moderation(commands.Cog):
         return True
 
     @commands.command()
+    @commands.has_permissions(ban_members=True)
     async def ban(self, ctx, user: Optional[discord.User], *, reason: str = ""):
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
@@ -55,6 +56,7 @@ class Moderation(commands.Cog):
         await actionlogs_channel.send(embed=actionlog_embed)
 
     @commands.command()
+    @commands.has_permissions(kick_members=True)
     async def kick(self, ctx, user: Optional[discord.User], *, reason: str = ""):
         if user is None and ctx.message.reference is None:
             return await ctx.send("No user was specified!")
