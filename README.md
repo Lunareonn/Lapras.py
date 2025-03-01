@@ -11,7 +11,6 @@
 - Macros
 - Actionlogs/Modlogs
 - Automatic role assignment for new members
-- Competitive Team Fortress 2 roster availability check
 - Turn message links into embed quotes
 - Toggle cogs on and off per-server
 - Embeds with more information about a spotify track
