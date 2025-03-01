@@ -55,6 +55,10 @@ def register_server(conn: mariadb.Connection, server_id: int):
     cur = pconn.cursor()
 
     cur = pconn.cursor()
+    cur.execute("SELECT server_id FROM servers WHERE server_id = ?", (server_id,))
+    if cur.fetchone() is not None:
+        return False
+
     cur.execute("INSERT INTO servers (server_id) VALUES (?)", (server_id,))
     cur.execute("INSERT INTO configs (server_id) VALUES(?);", (cur.lastrowid,))
     pconn.commit()
