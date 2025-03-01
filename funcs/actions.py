@@ -35,7 +35,8 @@ def setup_database(conn: mariadb.Connection):
                 issuer_id BIGINT NOT NULL,
                 user_id BIGINT NOT NULL,
                 reason TEXT,
-                count INTEGER NOT NULL,
+                count INTEGER,
+                action TEXT NOT NULL,
                 CONSTRAINT moderation_servers_FK FOREIGN KEY (server_id) REFERENCES servers(id)
                 );""")
     cur.execute("""CREATE TABLE IF NOT EXISTS cogs (
@@ -279,3 +280,27 @@ def fetch_commit_data():
 
     timestamp = int(date.timestamp())
     return timestamp, link
+
+
+def add_mod_record(conn: mariadb.Connection, server_id: int, issuer_id: int, user_id: int, reason: str, count: int, action: str):
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO moderation (server_id, issuer_id, user_id, reason, count, action) VALUES (?,?,?,?,?,?)", (fetched_server_id,
+                                                                                                                       issuer_id,
+                                                                                                                       user_id,
+                                                                                                                       reason,
+                                                                                                                       count,
+                                                                                                                       action))
+    pconn.commit()
+
+
+def fetch_warn_count(conn: mariadb.Connection, server_id: int, user_id: int):
+    pconn = conn.get_connection()
+    cur = pconn.cursor()
+    cur.execute("SELECT id FROM servers WHERE server_id = ?", (server_id,))
+    fetched_server_id = cur.fetchone()[0]
+    cur.execute("SELECT count FROM moderation WHERE server_id = ? AND user_id = ?", (fetched_server_id, user_id))
+    count = cur.fetchone()[0]
+    return count
