@@ -108,12 +108,11 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def manualregister(self, ctx):
-        cur = self.client.pconn.cursor()
-        cur.execute("SELECT server_id FROM servers WHERE server_id = ?", (ctx.guild.id,))
-        if cur.fetchone() is not None:
-            return await ctx.send(f"Server {ctx.guild.id} already in database")
+        register = actions.register_server(self.client.pconn, ctx.guild.id)
+        if register is False:
+            return await ctx.send(f"{ctx.guild.id} already registered")
         else:
-            actions.register_server(self.client.pconn, ctx.guild.id)
+            await ctx.send(f"{ctx.guild.id} registered")
 
     @commands.Cog.listener()
     async def on_message(self, message):
